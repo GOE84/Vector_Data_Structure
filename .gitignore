@@ -15,4 +15,5 @@ venv.bak/
 # Project files to ignore
 chroma_db/
 *.pdf
+!vector_problem.pdf
 temp_*
