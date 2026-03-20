@@ -56,28 +56,30 @@ uvicorn main:app --reload
 ### สเต็ปที่ 2: เริ่มทดสอบการตรวจของ AI
 คุณสามารถโยนก้อนข้อมูล **JSON** เข้าไปให้ 3 API ต่อไปนี้ลองทำงาน (อย่าลืมลบของเก่าแล้วแปะตย. นี้ไปแทน)
 
+*(หมายเหตุ: ระบบได้จำลองโจทย์ไว้ใน Mock DB โดยมี `question_id` คือ `q1` และ `q2` ซึ่ง API จะดึงข้อมูลโจทย์ เช่น Constraints, Time Limit มาประกอบใน Prompt อัตโนมัติ)*
+
 **1. ขอคำใบ้ (นักศึกษายังไม่ได้โค้ด)** ➔ **`POST /api/hint`**
 ```json
 {
-  "student_question": "ถ้าอาร์เรย์ vector ของผมมันเต็มแล้ว ผมต้องทำยังไงครับ มืดแปดด้าน",
-  "problem_topic": "vector data structure"
+  "question_id": "q1",
+  "student_question": "ถ้าอาร์เรย์ vector ของผมมันเต็มแล้ว ผมต้องทำยังไงครับ มืดแปดด้าน"
 }
 ```
 
 **2. วิเคราะห์โค้ด (ส่งงาน)** ➔ **`POST /api/analyze`**
 ```json
 {
-  "student_code": "void push_back(int val) { arr[size] = val; size++; }",
-  "problem_topic": "vector data structure"
+  "question_id": "q1",
+  "student_code": "void push_back(int val) { arr[size] = val; size++; }"
 }
 ```
 
 **3. ดูพัฒนาการ (ตรวจโค้ดเก่า-ใหม่)** ➔ **`POST /api/compare`**
 ```json
 {
+  "question_id": "q1",
   "old_code": "void push(int val) { arr[s++] = val; }",
-  "new_code": "void push(int val) { if (s == cap) resize(); arr[s++] = val; }",
-  "problem_topic": "vector data structure"
+  "new_code": "void push(int val) { if (s == cap) resize(); arr[s++] = val; }"
 }
 ```
 
