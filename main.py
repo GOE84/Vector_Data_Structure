@@ -13,18 +13,49 @@ from ai_service import (
 
 app = FastAPI(title="Vector Problem AI Tutor API")
 
+# Mock Database for testing since there is no actual database connected yet
+MOCK_QUESTIONS_DB = {
+    "q1": {
+        "id": "q1",
+        "title": "Merge Two Sorted Vectors",
+        "description": "Given two sorted vectors, merge them into a single sorted vector.",
+        "constraints": "1 <= vectors.length <= 10^5\nElements are integers.",
+        "difficulty": "Easy",
+        "expected_complexity": "O(N)",
+        "time_limit": 1000,
+        "memory_limit": 256
+    },
+    "q2": {
+        "id": "q2",
+        "title": "Find Kth Largest Element",
+        "description": "Find the Kth largest element in an unsorted vector.",
+        "constraints": "1 <= k <= vector.length <= 10^4",
+        "difficulty": "Medium",
+        "expected_complexity": "O(N)",
+        "time_limit": 2000,
+        "memory_limit": 128
+    }
+}
+
 class HintRequest(BaseModel):
+    question_id: str
     student_question: str
-    problem_topic: str = "vector data structure"
 
 class AnalyzeRequest(BaseModel):
+    question_id: str
     student_code: str
-    problem_topic: str = "vector data structure"
 
 class CompareRequest(BaseModel):
+    question_id: str
     old_code: str
     new_code: str
-    problem_topic: str = "vector data structure"
+
+def get_question_metadata(question_id: str):
+    """Retrieve question info from DB simulator and raise 404 if not found."""
+    metadata = MOCK_QUESTIONS_DB.get(question_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Question ID not found in database.")
+    return metadata
 
 
 @app.post("/ingest")
@@ -60,8 +91,11 @@ async def get_hint(request: HintRequest):
     """
     1. Pre-submit: Get a hint without receiving code.
     """
-    context = rag_service.get_context(request.problem_topic + " " + request.student_question)
-    response = generate_pre_submit_hint(context, request.student_question)
+    metadata = get_question_metadata(request.question_id)
+    # Query RAG using title + description to extract context
+    context = rag_service.get_context(metadata["title"] + " " + metadata["description"])
+    
+    response = generate_pre_submit_hint(context, metadata, request.student_question)
     return {"hint": response}
 
 
@@ -70,8 +104,10 @@ async def analyze_code(request: AnalyzeRequest):
     """
     2. Post-submit: Analyze code, checking Big O, logic, and suggesting better code.
     """
-    context = rag_service.get_context(request.problem_topic)
-    response = generate_post_submit_analysis(context, request.student_code)
+    metadata = get_question_metadata(request.question_id)
+    context = rag_service.get_context(metadata["title"] + " " + metadata["description"])
+    
+    response = generate_post_submit_analysis(context, metadata, request.student_code)
     return {"analysis": response}
 
 
@@ -80,7 +116,8 @@ async def compare_code(request: CompareRequest):
     """
     3. Compare versions: See if the student is heading in the right direction.
     """
-    context = rag_service.get_context(request.problem_topic)
-    response = generate_code_comparison(context, request.old_code, request.new_code)
+    metadata = get_question_metadata(request.question_id)
+    context = rag_service.get_context(metadata["title"] + " " + metadata["description"])
+    
+    response = generate_code_comparison(context, metadata, request.old_code, request.new_code)
     return {"comparison": response}
-
