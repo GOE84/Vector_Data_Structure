@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor - Vector Problem</title>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Kanit:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <!-- Marked.js for Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for Code Blocks -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --chat-bg: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-sub: #cbd5e1;
+            --user-msg: #3b82f6;
+            --ai-msg: #334155;
+            --border: #475569;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Kanit', 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--chat-bg);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
+
+        /* Header */
+        .header {
+            padding: 1.5rem;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings {
+            display: flex;
+            gap: 10px;
+        }
+
+        select {
+            background: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Chat History */
+        .chat-history {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 85%;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+        }
+
+        .bubble {
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            line-height: 1.6;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            word-wrap: break-word;
+        }
+
+        .user .bubble {
+            background: var(--user-msg);
+            border-bottom-right-radius: 2px;
+        }
+
+        .ai .bubble {
+            background: var(--ai-msg);
+            border-bottom-left-radius: 2px;
+        }
+
+        /* Markdown Styles inside Bubble */
+        .bubble h1,
+        .bubble h2,
+        .bubble h3 {
+            margin-top: 0;
+        }
+
+        .bubble pre {
+            background: #0d1117;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #30363d;
+        }
+
+        .bubble code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .bubble p {
+            margin-bottom: 0.5rem;
+        }
+
+        .bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        .sender-name {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin: 0 5px;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 1.5rem;
+            background: var(--bg-color);
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            background: transparent;
+            color: var(--text-sub);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .textareas {
+            display: flex;
+            gap: 10px;
+        }
+
+        textarea {
+            flex: 1;
+            background: var(--chat-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', inherit;
+            resize: none;
+            height: 80px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .send-btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+        }
+
+        .loader {
+            display: none;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Tutor <span>(Vector)</span></h1>
+            <div class="settings">
+                <select id="questionSelect">
+                    <option value="q1">โจทย์ที่ 1: Merge Two Sorted Vectors</option>
+                    <option value="q2">โจทย์ที่ 2: Find Kth Largest Element</option>
+                    <option value="q3">โจทย์ที่ 3: Reverse a Vector</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="chat-history" id="chatHistory">
+            <!-- Welcome Message -->
+            <div class="message ai">
+                <span class="sender-name">AI Tutor</span>
+                <div class="bubble">
+                    สวัสดีครับ! ผมคือผู้ช่วยสอน AI Model ollama12B ครับ 🎓 <br>
+                    เลือกโจทย์ด้านบน และเลือกโหมดด้านล่างเพื่อเริ่มพูดคุยกับผมได้เลยครับ!
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-controls" id="modeSelector">
+                <button class="mode-btn active" data-mode="hint">🙋‍♂️ ขอคำใบ้ (Hint)</button>
+                <button class="mode-btn" data-mode="analyze">🔍 ตรวจโค้ด (Analyze)</button>
+                <button class="mode-btn" data-mode="compare">⚖️ เทียบโค้ดเก่า-ใหม่ (Compare)</button>
+            </div>
+
+            <div class="textareas">
+                <textarea id="input1" placeholder="พิมพ์คำถามของคุณที่นี่..."></textarea>
+                <textarea id="input2" placeholder="วางโค้ดเวอร์ชันใหม่ที่นี่..." style="display: none;"></textarea>
+                <button class="send-btn" id="sendBtn">
+                    <span id="sendText">ส่งข้อมูล</span>
+                    <div class="loader" id="loader"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set marked.js options for code highlighting
+        marked.setOptions({
+            highlight: function (code, lang) {
+                const validLanguage = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(validLanguage, code).value;
+            }
+        });
+
+        const chatHistory = document.getElementById('chatHistory');
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const input1 = document.getElementById('input1');
+        const input2 = document.getElementById('input2');
+        const sendBtn = document.getElementById('sendBtn');
+        const sendText = document.getElementById('sendText');
+        const loader = document.getElementById('loader');
+        const questionSelect = document.getElementById('questionSelect');
+
+        let currentMode = 'hint';
+
+        // Toggle Modes
+        modeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = btn.dataset.mode;
+
+                input2.style.display = 'none';
+                if (currentMode === 'hint') {
+                    input1.placeholder = 'พิมพ์คำถามของคุณที่นี่...';
+                } else if (currentMode === 'analyze') {
+                    input1.placeholder = 'วางโค้ดที่ต้องการให้ตรวจที่นี่...';
+                } else if (currentMode === 'compare') {
+                    input1.placeholder = 'วางโค้ดเวอร์ชันเก่าที่นี่...';
+                    input2.placeholder = 'วางโค้ดเวอร์ชันใหม่ที่นี่...';
+                    input2.style.display = 'block';
+                }
+            });
+        });
+
+        function appendMessage(sender, content, isMarkdown = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'sender-name';
+            nameSpan.textContent = sender === 'user' ? 'คุณ (นักศึกษา)' : 'AI Tutor';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'bubble';
+
+            if (isMarkdown) {
+                bubbleDiv.innerHTML = marked.parse(content);
+            } else {
+                bubbleDiv.textContent = content;
+            }
+
+            msgDiv.appendChild(nameSpan);
+            msgDiv.appendChild(bubbleDiv);
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        sendBtn.addEventListener('click', async () => {
+            const val1 = input1.value.trim();
+            const val2 = input2.value.trim();
+            const qId = questionSelect.value;
+
+            if (!val1) return;
+            if (currentMode === 'compare' && !val2) return;
+
+            // Prepare Payload & display user message
+            let payload = { question_id: qId };
+            let userDisplay = '';
+
+            if (currentMode === 'hint') {
+                payload.student_question = val1;
+                userDisplay = `ขอคำใบ้: ${val1}`;
+            } else if (currentMode === 'analyze') {
+                payload.student_code = val1;
+                userDisplay = `ตรวจโค้ด:\n${val1}`;
+            } else if (currentMode === 'compare') {
+                payload.old_code = val1;
+                payload.new_code = val2;
+                userDisplay = `เทียบโค้ด:\nเก่า:\n${val1}\n\nใหม่:\n${val2}`;
+            }
+
+            appendMessage('user', userDisplay);
+            input1.value = '';
+            input2.value = '';
+
+            // Loading state
+            sendBtn.disabled = true;
+            sendText.style.display = 'none';
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/api/${currentMode}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                let aiResponseContent = '';
+                if (currentMode === 'hint') aiResponseContent = data.hint;
+                if (currentMode === 'analyze') aiResponseContent = data.analysis;
+                if (currentMode === 'compare') aiResponseContent = data.comparison;
+
+                appendMessage('ai', aiResponseContent, true);
+
+            } catch (error) {
+                appendMessage('ai', `ขออภัยครับ เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์: ${error.message} (อย่าลืมเปิด Ollama นะครับ!)`);
+            } finally {
+                sendBtn.disabled = false;
+                sendText.style.display = 'inline';
+                loader.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

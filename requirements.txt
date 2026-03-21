@@ -6,3 +6,5 @@ pypdf
 chromadb
 python-multipart
 ollama
+supabase
+httpx

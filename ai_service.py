@@ -1,6 +1,6 @@
 import ollama
 
-MODEL_NAME = "gemma3:12b"
+MODEL_NAME = "ai-tutor"
 
 def generate_pre_submit_hint(context: str, task_metadata: dict, student_question: str):
     system_message = """คุณคือ AI ติวเตอร์ที่ช่วยนักเรียนแก้ปัญหาเกี่ยวกับโครงสร้างข้อมูลเวกเตอร์ (vector data structure)

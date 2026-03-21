@@ -1,6 +1,8 @@
 import os
 import shutil
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 
@@ -13,29 +15,13 @@ from ai_service import (
 
 app = FastAPI(title="Vector Problem AI Tutor API")
 
-# Mock Database for testing since there is no actual database connected yet
-MOCK_QUESTIONS_DB = {
-    "q1": {
-        "id": "q1",
-        "title": "Merge Two Sorted Vectors",
-        "description": "Given two sorted vectors, merge them into a single sorted vector.",
-        "constraints": "1 <= vectors.length <= 10^5\nElements are integers.",
-        "difficulty": "Easy",
-        "expected_complexity": "O(N)",
-        "time_limit": 1000,
-        "memory_limit": 256
-    },
-    "q2": {
-        "id": "q2",
-        "title": "Find Kth Largest Element",
-        "description": "Find the Kth largest element in an unsorted vector.",
-        "constraints": "1 <= k <= vector.length <= 10^4",
-        "difficulty": "Medium",
-        "expected_complexity": "O(N)",
-        "time_limit": 2000,
-        "memory_limit": 128
-    }
-}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class HintRequest(BaseModel):
     question_id: str
@@ -50,13 +36,11 @@ class CompareRequest(BaseModel):
     old_code: str
     new_code: str
 
-def get_question_metadata(question_id: str):
-    """Retrieve question info from DB simulator and raise 404 if not found."""
-    metadata = MOCK_QUESTIONS_DB.get(question_id)
-    if not metadata:
-        raise HTTPException(status_code=404, detail="Question ID not found in database.")
-    return metadata
+from db_service import get_question_from_db
 
+def get_question_metadata(question_id: str):
+    """Retrieve question info from actual PostgreSQL Database (Supabase) and raise 404 if not found."""
+    return get_question_from_db(question_id)
 
 @app.post("/ingest")
 async def ingest_pdf(file: UploadFile = File(...)):
@@ -84,6 +68,15 @@ async def ingest_pdf(file: UploadFile = File(...)):
         os.remove(temp_file_path)
         
     return {"message": "PDF successfully ingested into Vector DB.", "details": result}
+
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_frontend():
+    """Serves the Chatbot UI."""
+    if os.path.exists("index.html"):
+        with open("index.html", "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>UI not found. Please create index.html</h1>"
 
 
 @app.post("/api/hint")
