@@ -1,6 +1,8 @@
 import os
 import shutil
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 
@@ -12,6 +14,14 @@ from ai_service import (
 )
 
 app = FastAPI(title="Vector Problem AI Tutor API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Mock Database for testing since there is no actual database connected yet
 MOCK_QUESTIONS_DB = {
@@ -33,6 +43,16 @@ MOCK_QUESTIONS_DB = {
         "difficulty": "Medium",
         "expected_complexity": "O(N)",
         "time_limit": 2000,
+        "memory_limit": 128
+    },
+    "q3": {
+        "id": "q3",
+        "title": "Reverse a Vector",
+        "description": "Write a function to reverse the elements in a vector in-place.",
+        "constraints": "1 <= N <= 10^5",
+        "difficulty": "Easy",
+        "expected_complexity": "O(N)",
+        "time_limit": 1000,
         "memory_limit": 128
     }
 }
@@ -84,6 +104,15 @@ async def ingest_pdf(file: UploadFile = File(...)):
         os.remove(temp_file_path)
         
     return {"message": "PDF successfully ingested into Vector DB.", "details": result}
+
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_frontend():
+    """Serves the Chatbot UI."""
+    if os.path.exists("index.html"):
+        with open("index.html", "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>UI not found. Please create index.html</h1>"
 
 
 @app.post("/api/hint")
