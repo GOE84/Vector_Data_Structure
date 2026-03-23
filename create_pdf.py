@@ -31,5 +31,7 @@ Time and Space Complexity:
 - Space Complexity: O(1), since we perform the swap in-place without using extra memory.
 """
 pdf.multi_cell(0, 10, text)
-pdf.output('vector_q3_reverse.pdf')
-print("PDF created successfully!")
+import os
+os.makedirs('pdfs', exist_ok=True)
+pdf.output('pdfs/vector_q3_reverse.pdf')
+print("PDF created successfully in pdfs folder!")

@@ -293,10 +293,27 @@
         <div class="header">
             <h1>🤖 AI Tutor <span>(Vector)</span></h1>
             <div class="settings">
+                <!-- PDF Upload Button -->
+                <input type="file" id="pdfUploadInput" accept=".pdf" style="display: none;">
+                <button class="mode-btn" id="uploadBtn" style="background-color: var(--chat-bg); color: var(--text-main); font-size: 0.9em;">
+                    📄 อัปโหลด PDF โจทย์
+                </button>
+                
                 <select id="questionSelect">
                     <option value="q1">โจทย์ที่ 1: Merge Two Sorted Vectors</option>
                     <option value="q2">โจทย์ที่ 2: Find Kth Largest Element</option>
                     <option value="q3">โจทย์ที่ 3: Reverse a Vector</option>
+                    <option value="q4">โจทย์ที่ 4: Grade Calculation (If-Else)</option>
+                    <option value="q5">โจทย์ที่ 5: Two Sum</option>
+                    <option value="q6">โจทย์ที่ 6: Maximum Subarray</option>
+                    <option value="q7">โจทย์ที่ 7: Palindrome Vector Check</option>
+                    <option value="q8">โจทย์ที่ 8: Remove Duplicates from Sorted Vector</option>
+                    <option value="q9">โจทย์ที่ 9: Missing Number</option>
+                    <option value="q10">โจทย์ที่ 10: Move Zeroes</option>
+                    <option value="q11">โจทย์ที่ 11: Best Time to Buy and Sell Stock</option>
+                    <option value="q12">โจทย์ที่ 12: Product of Array Except Self</option>
+                    <option value="q13">โจทย์ที่ 13: Contains Duplicate</option>
+                    <option value="q14">โจทย์ที่ 14: Merge Intervals</option>
                 </select>
             </div>
         </div>
@@ -453,6 +470,42 @@
                 sendText.style.display = 'inline';
                 loader.style.display = 'none';
             }
+        });
+        // PDF Upload Logic
+        const uploadBtn = document.getElementById('uploadBtn');
+        const pdfUploadInput = document.getElementById('pdfUploadInput');
+
+        uploadBtn.addEventListener('click', () => {
+            pdfUploadInput.click();
+        });
+
+        pdfUploadInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            appendMessage('user', `กำลังอัปโหลดไฟล์ PDF: ${file.name} ...`);
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/ingest', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Upload Failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                appendMessage('ai', `✅ อัปโหลดและเรียนรู้ไฟล์: **${data.filename}** สำเร็จแล้ว!\nระบบได้นำเข้าความรู้ทั้งหมด ${data.chunks} ท่อนเข้าสู่สมอง AI`);
+            } catch (error) {
+                appendMessage('ai', `❌ ขออภัยครับ เกิดข้อผิดพลาดในการอัปโหลด PDF: ${error.message}`);
+            }
+
+            // Reset input
+            pdfUploadInput.value = '';
         });
     </script>
 </body>
