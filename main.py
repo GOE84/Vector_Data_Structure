@@ -5,6 +5,8 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
+import tempfile
+import subprocess
 
 from rag_service import rag_service
 from ai_service import (
@@ -33,7 +35,8 @@ MOCK_QUESTIONS_DB = {
         "difficulty": "Easy",
         "expected_complexity": "O(N)",
         "time_limit": 1000,
-        "memory_limit": 256
+        "memory_limit": 256,
+        "starter_code": "def merge_sorted_lists(list1, list2):\n    # Write your code here\n    pass\n\n# --- Test Case ---\n# Click 'Run Code' to see the output of this print statement!\nprint(\"Test Case 1:\", merge_sorted_lists([1, 2, 4], [1, 3, 4]))"
     },
     "q2": {
         "id": "q2",
@@ -43,7 +46,8 @@ MOCK_QUESTIONS_DB = {
         "difficulty": "Medium",
         "expected_complexity": "O(N)",
         "time_limit": 2000,
-        "memory_limit": 128
+        "memory_limit": 128,
+        "starter_code": "def find_kth_largest(nums, k):\n    # Write your code here\n    pass\n\n# --- Test Case ---\nprint(\"Test Case 1:\", find_kth_largest([3,2,1,5,6,4], 2))"
     },
     "q3": {
         "id": "q3",
@@ -180,6 +184,9 @@ class CompareRequest(BaseModel):
     old_code: str
     new_code: str
 
+class RunRequest(BaseModel):
+    code: str
+
 def get_question_metadata(question_id: str):
     """Retrieve question info from DB simulator and raise 404 if not found."""
     metadata = MOCK_QUESTIONS_DB.get(question_id)
@@ -281,3 +288,33 @@ async def compare_code(request: CompareRequest):
         generate_code_comparison(context, metadata, request.old_code, request.new_code),
         media_type="text/plain"
     )
+
+@app.post("/api/run")
+async def run_code(request: RunRequest):
+    """Run python code locally and return output."""
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        f.write(request.code)
+        temp_path = f.name
+        
+    try:
+        # Run process
+        result = subprocess.run(
+            ["python3", temp_path],
+            capture_output=True,
+            text=True,
+            timeout=5 # 5 seconds timeout
+        )
+        return {
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "exit_code": result.returncode
+        }
+    except subprocess.TimeoutExpired:
+        return {
+            "stdout": "",
+            "stderr": "Execution timed out (5s limit)",
+            "exit_code": 124
+        }
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
