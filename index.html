@@ -11,61 +11,50 @@
         rel="stylesheet">
     <!-- Marked.js for Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Highlight.js for Code Blocks -->
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         :root {
             --bg-color: #0f172a;
-            --chat-bg: #1e293b;
+            --panel-bg: #1e293b;
             --primary: #3b82f6;
             --primary-hover: #2563eb;
             --text-main: #f8fafc;
             --text-sub: #cbd5e1;
             --user-msg: #3b82f6;
             --ai-msg: #334155;
-            --border: #475569;
+            --border: #334155;
+            --header-bg: #0f172a;
+            --btn-bg: #2d3748;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Kanit', 'Inter', sans-serif;
+            font-family: 'Inter', 'Kanit', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
+            flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
 
-        .container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
-            background: var(--chat-bg);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            border-left: 1px solid var(--border);
-            border-right: 1px solid var(--border);
-        }
-
-        /* Header */
+        /* Top Navbar */
         .header {
-            padding: 1.5rem;
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
+            height: 50px;
+            background: var(--header-bg);
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 10;
+            padding: 0 1.5rem;
         }
 
         .header h1 {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 500;
             display: flex;
             align-items: center;
@@ -75,46 +64,229 @@
         .settings {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
 
         select {
-            background: var(--bg-color);
+            background: var(--panel-bg);
             color: var(--text-main);
             border: 1px solid var(--border);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
             font-family: inherit;
             outline: none;
             cursor: pointer;
+            font-size: 0.9rem;
         }
 
-        select:focus {
-            border-color: var(--primary);
+        .header-btn {
+            background: var(--panel-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
         }
 
-        /* Chat History */
+        .header-btn:hover {
+            background: #2d3748;
+            border-color: #4a5568;
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Panel Common Styles */
+        .panel {
+            display: flex;
+            flex-direction: column;
+            background: var(--panel-bg);
+            border-right: 1px solid var(--bg-color);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 0.75rem 1rem;
+            background: #1e293b;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+        }
+
+        /* Left Panel - Problem Description */
+        .left-panel {
+            flex: 0 0 30%;
+            overflow-y: auto;
+        }
+
+        .problem-content {
+            padding: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .problem-title {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .diff-easy {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .diff-medium {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .diff-hard {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .problem-section {
+            margin-top: 1.5rem;
+        }
+
+        .problem-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .constraints-box {
+            background: var(--bg-color);
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+        }
+
+        /* Middle Panel - Code Editor */
+        .middle-panel {
+            flex: 1;
+            border-right: 1px solid var(--bg-color);
+        }
+
+        #editor-container {
+            flex: 1;
+            width: 100%;
+        }
+
+        .editor-footer {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: var(--panel-bg);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Right Panel - AI Chat (Pushing Drawer) */
+        .right-panel {
+            width: 0;
+            overflow: hidden;
+            background: var(--panel-bg);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: none;
+            position: relative;
+        }
+
+        .right-panel.open {
+            width: var(--ai-width, 450px);
+            border-left: 1px solid var(--border);
+            overflow: visible;
+        }
+
+        .right-panel-inner {
+            width: var(--ai-width, 450px);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .right-panel.is-resizing {
+            transition: none;
+        }
+
+        .resizer {
+            width: 6px;
+            cursor: col-resize;
+            position: absolute;
+            left: -3px;
+            top: 0;
+            bottom: 0;
+            z-index: 10;
+            background: transparent;
+            transition: background 0.2s;
+        }
+
+        .resizer:hover,
+        .right-panel.is-resizing .resizer {
+            background: var(--primary);
+        }
+
         .chat-history {
             flex: 1;
-            padding: 1.5rem;
+            padding: 1rem;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            scroll-behavior: smooth;
+            gap: 1rem;
         }
 
+        /* Chat Messages Styles */
         .message {
-            max-width: 85%;
+            max-width: 90%;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
             animation: fadeIn 0.3s ease-out;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(5px);
             }
 
             to {
@@ -133,37 +305,39 @@
         }
 
         .bubble {
-            padding: 1rem 1.2rem;
-            border-radius: 12px;
-            line-height: 1.6;
-            font-size: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            line-height: 1.5;
+            font-size: 0.95rem;
             word-wrap: break-word;
         }
 
         .user .bubble {
             background: var(--user-msg);
-            border-bottom-right-radius: 2px;
+            color: white;
+            border-bottom-right-radius: 0;
         }
 
         .ai .bubble {
             background: var(--ai-msg);
-            border-bottom-left-radius: 2px;
+            border-bottom-left-radius: 0;
+            border: 1px solid var(--border);
         }
 
-        /* Markdown Styles inside Bubble */
-        .bubble h1,
-        .bubble h2,
-        .bubble h3 {
-            margin-top: 0;
+        .sender-name {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            margin: 0 4px;
         }
 
+        /* Markdown in Chat */
         .bubble pre {
             background: #0d1117;
-            padding: 1rem;
-            border-radius: 8px;
+            padding: 0.75rem;
+            border-radius: 6px;
             overflow-x: auto;
             border: 1px solid #30363d;
+            margin: 0.5rem 0;
         }
 
         .bubble code {
@@ -171,10 +345,11 @@
             font-size: 0.9em;
             background: rgba(0, 0, 0, 0.2);
             padding: 2px 4px;
-            border-radius: 4px;
+            border-radius: 3px;
         }
 
         .bubble p {
+            margin-top: 0;
             margin-bottom: 0.5rem;
         }
 
@@ -182,33 +357,29 @@
             margin-bottom: 0;
         }
 
-        .sender-name {
-            font-size: 0.8rem;
-            color: var(--text-sub);
-            margin: 0 5px;
-        }
-
-        /* Input Area */
-        .input-area {
-            padding: 1.5rem;
-            background: var(--bg-color);
-            border-top: 1px solid var(--border);
+        /* Chat Input Area */
+        .chat-input-area {
+            padding: 1rem;
+            background: var(--panel-bg);
+            border-top: 1px solid var(--bg-color);
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        .input-controls {
+        .chat-modes {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .mode-btn {
             background: transparent;
             color: var(--text-sub);
             border: 1px solid var(--border);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -219,136 +390,144 @@
             border-color: var(--primary);
         }
 
-        .textareas {
+        .chat-input-wrapper {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
-        textarea {
+        #chatInput {
             flex: 1;
-            background: var(--chat-bg);
+            background: var(--bg-color);
             color: var(--text-main);
             border: 1px solid var(--border);
-            padding: 1rem;
-            border-radius: 8px;
-            font-family: 'Courier New', inherit;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-family: inherit;
             resize: none;
-            height: 80px;
+            height: 40px;
             outline: none;
-            transition: border-color 0.2s;
         }
 
-        textarea:focus {
+        #chatInput:focus {
             border-color: var(--primary);
         }
 
-        .send-btn {
+        .btn-send-chat {
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 8px;
-            padding: 0 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
+            border-radius: 6px;
+            width: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
         }
 
-        .send-btn:hover {
-            background: var(--primary-hover);
-        }
-
-        .send-btn:disabled {
+        .btn-send-chat:disabled {
             background: var(--border);
             cursor: not-allowed;
-        }
-
-        .loader {
-            display: none;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 3px solid white;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h1>🤖 AI Tutor <span>(Vector)</span></h1>
-            <div class="settings">
-                <!-- PDF Upload Button -->
-                <input type="file" id="pdfUploadInput" accept=".pdf" style="display: none;">
-                <button class="mode-btn" id="uploadBtn" style="background-color: var(--chat-bg); color: var(--text-main); font-size: 0.9em;">
-                    📄 อัปโหลด PDF โจทย์
-                </button>
-                
-                <select id="questionSelect">
-                    <option value="q1">โจทย์ที่ 1: Merge Two Sorted Vectors</option>
-                    <option value="q2">โจทย์ที่ 2: Find Kth Largest Element</option>
-                    <option value="q3">โจทย์ที่ 3: Reverse a Vector</option>
-                    <option value="q4">โจทย์ที่ 4: Grade Calculation (If-Else)</option>
-                    <option value="q5">โจทย์ที่ 5: Two Sum</option>
-                    <option value="q6">โจทย์ที่ 6: Maximum Subarray</option>
-                    <option value="q7">โจทย์ที่ 7: Palindrome Vector Check</option>
-                    <option value="q8">โจทย์ที่ 8: Remove Duplicates from Sorted Vector</option>
-                    <option value="q9">โจทย์ที่ 9: Missing Number</option>
-                    <option value="q10">โจทย์ที่ 10: Move Zeroes</option>
-                    <option value="q11">โจทย์ที่ 11: Best Time to Buy and Sell Stock</option>
-                    <option value="q12">โจทย์ที่ 12: Product of Array Except Self</option>
-                    <option value="q13">โจทย์ที่ 13: Contains Duplicate</option>
-                    <option value="q14">โจทย์ที่ 14: Merge Intervals</option>
-                </select>
+    <!-- Header -->
+    <div class="header">
+        <h1>🤖 AI Tutor</h1>
+        <div class="settings">
+            <input type="file" id="pdfUploadInput" accept=".pdf" style="display: none;">
+            <button class="header-btn" id="uploadBtn">📄 Upload PDF</button>
+            <select id="questionSelect">
+                <option value="">Loading questions...</option>
+            </select>
+            <button class="header-btn" id="toggleAiBtn"
+                style="background: var(--primary); color: white; border-color: var(--primary);">✨ AI</button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+
+        <!-- Left Panel: Problem Description -->
+        <div class="panel left-panel">
+            <div class="panel-header">📄 Description</div>
+            <div class="problem-content" id="problemContent">
+                <div style="text-align: center; margin-top: 50px; color: #64748b;">No problem selected.</div>
             </div>
         </div>
 
-        <div class="chat-history" id="chatHistory">
-            <!-- Welcome Message -->
-            <div class="message ai">
-                <span class="sender-name">AI Tutor</span>
-                <div class="bubble">
-                    สวัสดีครับ! ผมคือผู้ช่วยสอน AI Model ollama12B ครับ 🎓 <br>
-                    เลือกโจทย์ด้านบน และเลือกโหมดด้านล่างเพื่อเริ่มพูดคุยกับผมได้เลยครับ!
+        <!-- Middle Panel: Code Editor -->
+        <div class="panel middle-panel">
+            <div class="panel-header" id="editorHeader">
+                &lt;/&gt; Code
+                <span style="flex:1"></span>
+                <span style="font-size: 0.75rem; font-weight: normal;">Python 3</span>
+            </div>
+            <div id="editor-container"></div>
+
+            <div class="editor-footer">
+                <!-- Using Analyze Mode directly from Editor -->
+                <button class="btn-submit" id="btnAnalyzeCode" title="Send code to AI for Analysis">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                    Analyze Code
+                </button>
+                <button class="btn-submit" id="btnCompareCode" style="background:#f59e0b;"
+                    title="Compare Editor Code vs Last Version">
+                    ⚖️ Compare
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Panel: AI Chat -->
+        <div class="panel right-panel">
+            <div class="resizer" id="aiResizer"></div>
+            <div class="right-panel-inner">
+                <div class="panel-header" style="justify-content: space-between;">
+                    <span>✨ AI Assistant (Leet)</span>
+                    <button id="closeAiBtn"
+                        style="background: transparent; border: none; color: var(--text-sub); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">×</button>
+                </div>
+
+                <div class="chat-history" id="chatHistory">
+                    <div class="message ai">
+                        <span class="sender-name">AI Tutor</span>
+                        <div class="bubble">
+                            สวัสดีครับ! ผมคือ AI Tutor 🎓 <br>
+                            - หากมีคำถาม กดปุ่ม <b>Hint</b> ด้านล่างแล้วพิมพ์ถามได้เลย<br>
+                            - หรือสามารถเขียนโค้ดตรงกลางแล้วกดปุ่ม <b>Analyze Code</b> ให้ผมช่วยรีวิวได้ครับ!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="chat-modes" id="modeSelector">
+                        <button class="mode-btn active" data-mode="hint">🙋‍♂️ Hint (General Q&A)</button>
+                        <!-- other modes are handled implicitly via UI buttons -->
+                    </div>
+                    <div class="chat-input-wrapper">
+                        <textarea id="chatInput" placeholder="Ask a question about the problem..."></textarea>
+                        <button class="btn-send-chat" id="sendBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="input-area">
-            <div class="input-controls" id="modeSelector">
-                <button class="mode-btn active" data-mode="hint">🙋‍♂️ ขอคำใบ้ (Hint)</button>
-                <button class="mode-btn" data-mode="analyze">🔍 ตรวจโค้ด (Analyze)</button>
-                <button class="mode-btn" data-mode="compare">⚖️ เทียบโค้ดเก่า-ใหม่ (Compare)</button>
-            </div>
-
-            <div class="textareas">
-                <textarea id="input1" placeholder="พิมพ์คำถามของคุณที่นี่..."></textarea>
-                <textarea id="input2" placeholder="วางโค้ดเวอร์ชันใหม่ที่นี่..." style="display: none;"></textarea>
-                <button class="send-btn" id="sendBtn">
-                    <span id="sendText">ส่งข้อมูล</span>
-                    <div class="loader" id="loader"></div>
-                </button>
-            </div>
-        </div>
     </div>
 
+    <!-- Monaco Editor Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
     <script>
-        // Set marked.js options for code highlighting
+        // Setup Highlight.js for marked text
         marked.setOptions({
             highlight: function (code, lang) {
                 const validLanguage = hljs.getLanguage(lang) ? lang : 'plaintext';
@@ -356,37 +535,136 @@
             }
         });
 
-        const chatHistory = document.getElementById('chatHistory');
-        const modeButtons = document.querySelectorAll('.mode-btn');
-        const input1 = document.getElementById('input1');
-        const input2 = document.getElementById('input2');
-        const sendBtn = document.getElementById('sendBtn');
-        const sendText = document.getElementById('sendText');
-        const loader = document.getElementById('loader');
+        // UI Elements
         const questionSelect = document.getElementById('questionSelect');
+        const problemContent = document.getElementById('problemContent');
+        const rightPanel = document.querySelector('.right-panel');
+        const toggleAiBtn = document.getElementById('toggleAiBtn');
+        const closeAiBtn = document.getElementById('closeAiBtn');
 
-        let currentMode = 'hint';
+        // Sliding Panel Logic
+        function openAiPanel() { rightPanel.classList.add('open'); }
+        function closeAiPanel() { rightPanel.classList.remove('open'); }
+        toggleAiBtn.addEventListener('click', () => rightPanel.classList.toggle('open'));
+        closeAiBtn.addEventListener('click', closeAiPanel);
 
-        // Toggle Modes
-        modeButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                modeButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentMode = btn.dataset.mode;
+        // Resizer Logic
+        const aiResizer = document.getElementById('aiResizer');
+        let isResizing = false;
+        aiResizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            rightPanel.classList.add('is-resizing');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault();
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            let newWidth = window.innerWidth - e.clientX;
+            if (newWidth < 300) newWidth = 300;
+            if (newWidth > window.innerWidth * 0.7) newWidth = window.innerWidth * 0.7; // limit to 70% of screen
+            document.documentElement.style.setProperty('--ai-width', `${newWidth}px`);
+        });
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                rightPanel.classList.remove('is-resizing');
+                document.body.style.cursor = '';
+            }
+        });
 
-                input2.style.display = 'none';
-                if (currentMode === 'hint') {
-                    input1.placeholder = 'พิมพ์คำถามของคุณที่นี่...';
-                } else if (currentMode === 'analyze') {
-                    input1.placeholder = 'วางโค้ดที่ต้องการให้ตรวจที่นี่...';
-                } else if (currentMode === 'compare') {
-                    input1.placeholder = 'วางโค้ดเวอร์ชันเก่าที่นี่...';
-                    input2.placeholder = 'วางโค้ดเวอร์ชันใหม่ที่นี่...';
-                    input2.style.display = 'block';
-                }
+        const chatHistory = document.getElementById('chatHistory');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const btnAnalyzeCode = document.getElementById('btnAnalyzeCode');
+        const btnCompareCode = document.getElementById('btnCompareCode');
+
+        // State
+        let currentQuestionId = null;
+        let myEditor = null;
+        let previousCode = ""; // Stored for comparison mode
+
+        // Monaco Editor Initialization
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            myEditor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: "class Solution:\n    def solve(self):\n        pass",
+                language: 'python',
+                theme: 'vs-dark',
+                automaticLayout: true,
+                minimap: { enabled: false },
+                fontSize: 14,
+                fontFamily: "'Courier New', monospace"
             });
         });
 
+        // Initialize App
+        async function loadQuestions() {
+            try {
+                const res = await fetch('/api/questions');
+                const questions = await res.json();
+
+                questionSelect.innerHTML = '';
+                questions.forEach(q => {
+                    const opt = document.createElement('option');
+                    opt.value = q.id;
+                    opt.textContent = `${q.id.toUpperCase()}: ${q.title}`;
+                    questionSelect.appendChild(opt);
+                });
+
+                if (questions.length > 0) {
+                    questionSelect.value = questions[0].id;
+                    loadProblemDetails(questions[0].id);
+                }
+            } catch (err) {
+                console.error("Failed to load questions", err);
+            }
+        }
+
+        async function loadProblemDetails(qId) {
+            currentQuestionId = qId;
+            try {
+                const res = await fetch(`/api/questions/${qId}`);
+                if (!res.ok) throw new Error("Failed to load details");
+                const data = await res.json();
+
+                let diffClass = 'diff-easy';
+                if (data.difficulty.toLowerCase() === 'medium') diffClass = 'diff-medium';
+                if (data.difficulty.toLowerCase() === 'hard') diffClass = 'diff-hard';
+
+                problemContent.innerHTML = `
+                    <h2 class="problem-title">${data.title}</h2>
+                    <span class="difficulty-badge ${diffClass}">${data.difficulty}</span>
+                    
+                    <div class="problem-section">
+                        ${marked.parse(data.description)}
+                    </div>
+
+                    <div class="problem-section">
+                        <h3>Constraints:</h3>
+                        <div class="constraints-box">
+                            ${data.constraints.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                    
+                    <div class="problem-section">
+                        <div style="font-size:0.85rem; color:#94a3b8; display:flex; justify-content:space-between; margin-top: 20px;">
+                            <span>⏱ Time Limit: ${data.time_limit} ms</span>
+                            <span>💾 Memory Limit: ${data.memory_limit} MB</span>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                problemContent.innerHTML = `<div style="color:red">Failed to load problem details.</div>`;
+            }
+        }
+
+        questionSelect.addEventListener('change', (e) => {
+            loadProblemDetails(e.target.value);
+        });
+
+        loadQuestions();
+
+        // Chat & AI Integration
         function appendMessage(sender, content, isMarkdown = false) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${sender}`;
@@ -398,114 +676,125 @@
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = 'bubble';
 
-            if (isMarkdown) {
-                bubbleDiv.innerHTML = marked.parse(content);
-            } else {
-                bubbleDiv.textContent = content;
-            }
+            if (isMarkdown) bubbleDiv.innerHTML = marked.parse(content);
+            else bubbleDiv.textContent = content;
 
             msgDiv.appendChild(nameSpan);
             msgDiv.appendChild(bubbleDiv);
             chatHistory.appendChild(msgDiv);
+
             chatHistory.scrollTop = chatHistory.scrollHeight;
+            return bubbleDiv;
         }
 
-        sendBtn.addEventListener('click', async () => {
-            const val1 = input1.value.trim();
-            const val2 = input2.value.trim();
-            const qId = questionSelect.value;
+        async function requestAIStream(endpoint, payload, userDisplayMsg) {
+            if (!currentQuestionId) return;
+            payload.question_id = currentQuestionId;
 
-            if (!val1) return;
-            if (currentMode === 'compare' && !val2) return;
-
-            // Prepare Payload & display user message
-            let payload = { question_id: qId };
-            let userDisplay = '';
-
-            if (currentMode === 'hint') {
-                payload.student_question = val1;
-                userDisplay = `ขอคำใบ้: ${val1}`;
-            } else if (currentMode === 'analyze') {
-                payload.student_code = val1;
-                userDisplay = `ตรวจโค้ด:\n${val1}`;
-            } else if (currentMode === 'compare') {
-                payload.old_code = val1;
-                payload.new_code = val2;
-                userDisplay = `เทียบโค้ด:\nเก่า:\n${val1}\n\nใหม่:\n${val2}`;
-            }
-
-            appendMessage('user', userDisplay);
-            input1.value = '';
-            input2.value = '';
-
-            // Loading state
-            sendBtn.disabled = true;
-            sendText.style.display = 'none';
-            loader.style.display = 'block';
+            appendMessage('user', userDisplayMsg, false);
+            const btnStates = disableInputs(true);
 
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/${currentMode}`, {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP Error: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
-                const data = await response.json();
-
+                const bubbleDiv = appendMessage('ai', '', true);
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
                 let aiResponseContent = '';
-                if (currentMode === 'hint') aiResponseContent = data.hint;
-                if (currentMode === 'analyze') aiResponseContent = data.analysis;
-                if (currentMode === 'compare') aiResponseContent = data.comparison;
 
-                appendMessage('ai', aiResponseContent, true);
-
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    aiResponseContent += decoder.decode(value, { stream: true });
+                    bubbleDiv.innerHTML = marked.parse(aiResponseContent);
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }
             } catch (error) {
-                appendMessage('ai', `ขออภัยครับ เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์: ${error.message} (อย่าลืมเปิด Ollama นะครับ!)`);
+                appendMessage('ai', `❌ Connection Error: ${error.message}`);
             } finally {
-                sendBtn.disabled = false;
-                sendText.style.display = 'inline';
-                loader.style.display = 'none';
+                disableInputs(false, btnStates);
             }
+        }
+
+        function disableInputs(disabled, states = {}) {
+            if (disabled) {
+                const s = { sendBtn: sendBtn.disabled, btnA: btnAnalyzeCode.disabled, btnC: btnCompareCode.disabled };
+                sendBtn.disabled = true;
+                btnAnalyzeCode.disabled = true;
+                btnCompareCode.disabled = true;
+                return s;
+            } else {
+                sendBtn.disabled = false;
+                btnAnalyzeCode.disabled = false;
+                btnCompareCode.disabled = false;
+            }
+        }
+
+        // Action: Hint (from chat box)
+        sendBtn.addEventListener('click', () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            chatInput.value = '';
+            requestAIStream('/api/hint', { student_question: text }, `💬 ถาม: ${text}`);
         });
-        // PDF Upload Logic
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendBtn.click(); }
+        });
+
+        // Action: Analyze Code (from editor)
+        btnAnalyzeCode.addEventListener('click', () => {
+            if (!myEditor) return;
+            openAiPanel();
+            const code = myEditor.getValue();
+            previousCode = code; // Save for future comparison
+            requestAIStream('/api/analyze', { student_code: code }, `🔍 [Analyze Code]\nส่งโค้ดความยาว ${code.length} ตัวอักษรไปให้ AI รีวิว`);
+        });
+
+        // Action: Compare Code
+        btnCompareCode.addEventListener('click', () => {
+            if (!myEditor) return;
+            openAiPanel();
+            const currentCode = myEditor.getValue();
+            if (!previousCode || previousCode === currentCode) {
+                alert("Please analyze a previous version of code first, or write a new one to compare!");
+                return;
+            }
+            requestAIStream('/api/compare', {
+                old_code: previousCode,
+                new_code: currentCode
+            }, `⚖️ [Compare Code]\nเทียบบทแก้ไขล่าสุดกับผลงานเดิม`);
+            previousCode = currentCode; // update
+        });
+
+        // PDF Upload
         const uploadBtn = document.getElementById('uploadBtn');
         const pdfUploadInput = document.getElementById('pdfUploadInput');
 
-        uploadBtn.addEventListener('click', () => {
-            pdfUploadInput.click();
-        });
+        uploadBtn.addEventListener('click', () => pdfUploadInput.click());
 
-        pdfUploadInput.addEventListener('change', async (event) => {
-            const file = event.target.files[0];
+        pdfUploadInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
             if (!file) return;
 
-            appendMessage('user', `กำลังอัปโหลดไฟล์ PDF: ${file.name} ...`);
-
+            appendMessage('user', `กำลังอัปโหลดไฟล์: ${file.name}`);
             const formData = new FormData();
             formData.append('file', file);
 
             try {
-                const response = await fetch('http://127.0.0.1:8000/ingest', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Upload Failed: ${response.status}`);
-                }
-
+                const response = await fetch('/ingest', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error("Upload Failed");
                 const data = await response.json();
-                appendMessage('ai', `✅ อัปโหลดและเรียนรู้ไฟล์: **${data.filename}** สำเร็จแล้ว!\nระบบได้นำเข้าความรู้ทั้งหมด ${data.chunks} ท่อนเข้าสู่สมอง AI`);
+                appendMessage('ai', `✅ เรียนรู้ไฟล์สำเร็จ: **${data.filename || file.name}**`, true);
             } catch (error) {
-                appendMessage('ai', `❌ ขออภัยครับ เกิดข้อผิดพลาดในการอัปโหลด PDF: ${error.message}`);
+                appendMessage('ai', `❌ เกิดข้อผิดพลาด: ${error.message}`);
             }
-
-            // Reset input
-            pdfUploadInput.value = '';
         });
     </script>
 </body>

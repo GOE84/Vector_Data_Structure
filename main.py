@@ -1,7 +1,7 @@
 import os
 import shutil
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
@@ -225,6 +225,21 @@ async def serve_frontend():
     return "<h1>UI not found. Please create index.html</h1>"
 
 
+@app.get("/api/questions")
+async def get_all_questions():
+    """Return a brief list of all available questions."""
+    return [
+        {"id": q["id"], "title": q["title"], "difficulty": q["difficulty"]}
+        for q in MOCK_QUESTIONS_DB.values()
+    ]
+
+
+@app.get("/api/questions/{question_id}")
+async def get_question(question_id: str):
+    """Return full details for a specific question."""
+    return get_question_metadata(question_id)
+
+
 @app.post("/api/hint")
 async def get_hint(request: HintRequest):
     """
@@ -234,8 +249,10 @@ async def get_hint(request: HintRequest):
     # Query RAG using title + description to extract context
     context = rag_service.get_context(metadata["title"] + " " + metadata["description"])
     
-    response = generate_pre_submit_hint(context, metadata, request.student_question)
-    return {"hint": response}
+    return StreamingResponse(
+        generate_pre_submit_hint(context, metadata, request.student_question),
+        media_type="text/plain"
+    )
 
 
 @app.post("/api/analyze")
@@ -246,8 +263,10 @@ async def analyze_code(request: AnalyzeRequest):
     metadata = get_question_metadata(request.question_id)
     context = rag_service.get_context(metadata["title"] + " " + metadata["description"])
     
-    response = generate_post_submit_analysis(context, metadata, request.student_code)
-    return {"analysis": response}
+    return StreamingResponse(
+        generate_post_submit_analysis(context, metadata, request.student_code),
+        media_type="text/plain"
+    )
 
 
 @app.post("/api/compare")
@@ -258,5 +277,7 @@ async def compare_code(request: CompareRequest):
     metadata = get_question_metadata(request.question_id)
     context = rag_service.get_context(metadata["title"] + " " + metadata["description"])
     
-    response = generate_code_comparison(context, metadata, request.old_code, request.new_code)
-    return {"comparison": response}
+    return StreamingResponse(
+        generate_code_comparison(context, metadata, request.old_code, request.new_code),
+        media_type="text/plain"
+    )

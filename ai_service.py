@@ -46,21 +46,23 @@ memory limit: {task_metadata.get('memory_limit', '')} MB
 4. หลีกเลี่ยงการเขียนโค้ดเฉลยในภาษาโปรแกรมจริง (อนุญาต pseudo-code ระดับสูงเฉพาะเมื่อจำเป็น)
 5. ให้กำลังใจและชวนให้ผู้ทำโจทย์ลองเขียนโค้ดเอง"""
 
-    response = ollama.chat(model=MODEL_NAME, messages=[
+    response_stream = ollama.chat(model=MODEL_NAME, messages=[
         {'role': 'system', 'content': system_message},
         {'role': 'user', 'content': user_message}
-    ])
-    return response['message']['content']
+    ], stream=True)
+    for chunk in response_stream:
+        if 'message' in chunk and 'content' in chunk['message']:
+            yield chunk['message']['content']
 
 
 def generate_post_submit_analysis(context: str, task_metadata: dict, student_code: str):
-    system_message = """คุณคือ AI ผู้รีวิวโค้ด ที่มีหน้าที่วิเคราะห์และให้ข้อเสนอแนะกับคำตอบของนักเรียนในหัวข้อโครงสร้างข้อมูลเวกเตอร์ (vector data structure)
+    system_message = """คุณคือ AI ติวเตอร์ตรวจโค้ดที่อธิบายเก่ง กระชับ และเข้าใจง่าย
 
 กฎสำคัญ:
-- โหมดปัจจุบันคือ "วิเคราะห์คำตอบหลังส่งโค้ด (post-submit analysis)"
-- ต้องตรวจสอบความถูกต้องของแนวคิดและโค้ด
-- ต้องประเมินประสิทธิภาพเชิง Big O ทั้งเวลาและหน่วยความจำโดยสังเขป
-- สามารถเสนอแนวทางหรือโค้ดที่ดีกว่าได้ พร้อมอธิบายเหตุผล"""
+- โหมดปัจจุบันคือ "วิเคราะห์คำตอบหลังส่งโค้ด"
+- ให้คำวิเคราะห์ที่สั้น ตรงประเด็น ไม่เยิ่นเย้อ
+- ใช้ภาษาเป็นกันเอง เข้าใจง่าย อ่านปุ๊บรู้เรื่องปั๊บ
+- ประเมินความถูกต้องและประสิทธิภาพ Big O ให้ชัดเจน"""
 
     user_message = f"""<โหมดการใช้งาน>
 analyze
@@ -89,18 +91,18 @@ memory limit: {task_metadata.get('memory_limit', '')} MB
 {student_code}
 </โค้ดของผู้ทำโจทย์>
 
-โปรดตอบในรูปแบบ:
-1. สรุปสั้นๆ ว่าโค้ดนี้แก้โจทย์ได้ถูกต้องตามเงื่อนไขหรือไม่ (รวมถึง edge cases สำคัญ)
-2. ระบุจุดแข็งของโค้ดนี้
-3. ระบุจุดที่ควรปรับปรุง (เช่น ความซับซ้อนสูงไป, อ่านยาก, handle เคสไม่ครบ)
-4. ประเมิน time complexity และ space complexity ของโค้ดปัจจุบัน และเปรียบเทียบกับ expected time complexity ที่กำหนดในข้อมูลโจทย์
-5. หากมีแนวทางหรือโค้ดที่ดีกว่า ให้ยกตัวอย่างพร้อมอธิบายว่าดีกว่าตรงไหน"""
+โปรดตอบให้กระชับและเข้าใจง่ายที่สุด โดยแบ่งเป็น 3 หัวข้อดังนี้:
+1. 🎯 **ผลการตรวจ:** โค้ดนี้ทำงานถูกต้องครอบคลุมไหม? มีลืมคิดเคสไหนหรือเปล่า? (อธิบายสั้นๆ 1-2 บรรทัด)
+2. ⚡ **ประสิทธิภาพ (Big O):** Time/Space Complexity ของโค้ดนี้คืออะไร และผ่านเกณฑ์ที่โจทย์กำหนดหรือไม่?
+3. 💡 **คำแนะนำ & โค้ดที่เร็วกว่า:** แนะนำจุดที่ควรแก้ให้โค้ดคลีนขึ้น หรือถ้ามีวิธีที่เร็วกว่าให้ยกตัวอย่างโค้ดสั้นๆ พร้อมอธิบายจุดสำคัญ"""
 
-    response = ollama.chat(model=MODEL_NAME, messages=[
+    response_stream = ollama.chat(model=MODEL_NAME, messages=[
         {'role': 'system', 'content': system_message},
         {'role': 'user', 'content': user_message}
-    ])
-    return response['message']['content']
+    ], stream=True)
+    for chunk in response_stream:
+        if 'message' in chunk and 'content' in chunk['message']:
+            yield chunk['message']['content']
 
 
 def generate_code_comparison(context: str, task_metadata: dict, old_code: str, new_code: str):
@@ -149,8 +151,10 @@ memory limit: {task_metadata.get('memory_limit', '')} MB
 4. เปรียบเทียบ time complexity และ space complexity ระหว่างเวอร์ชันเก่าและใหม่
 5. ให้คำแนะนำเชิงรูปธรรมว่าควรปรับเวอร์ชันใหม่อย่างไรให้ดีกว่าเดิมอย่างชัดเจน"""
 
-    response = ollama.chat(model=MODEL_NAME, messages=[
+    response_stream = ollama.chat(model=MODEL_NAME, messages=[
         {'role': 'system', 'content': system_message},
         {'role': 'user', 'content': user_message}
-    ])
-    return response['message']['content']
+    ], stream=True)
+    for chunk in response_stream:
+        if 'message' in chunk and 'content' in chunk['message']:
+            yield chunk['message']['content']
