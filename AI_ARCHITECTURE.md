@@ -147,3 +147,124 @@ while (!done) {
 
 **8. Q: ถ้าเด็กเขียนโค้ดผิด (Logic พัง) แต่ AI หลงทิศ (Hallucination) กลับชมว่าเขียนโค้ดได้ถูกต้อง แบบนี้แก้ไขยังไง?**
 * **A:** นี่คือจุดอ่อนของการดึง AI มาเป็นเครื่องตรวจคำตอบที่ตายตัวครับ วิธีแก้ปัญหาทางสถาปัตยกรรม (Architecture) ที่ถูกต้อง คือต้องนำ **Unit Tests (Test cases)** มาใช้รันโค้ดตรวจผลลัพธ์ (Input/Output) ให้ผ่านก่อน 100% แล้วค่อยเอา AI มาทำหน้าที่เป็น **Code Reviewer** (ตรวจดูว่าโค้ดสวยมั้ย, ซับซ้อนไปรึเปล่า, แนะนำอัลกอริทึมที่ดีกว่า) แทนที่จะให้ AI เป็นคนตัดสินความถูกผิดทั้งหมด
+
+---
+
+## 6. อัพเดตระบบ: Dual Model System (เพิ่มเมื่อ 31 มีนาคม 2568)
+
+### 6.1 ภาพรวมการเปลี่ยนแปลง
+
+ระบบได้รับการอัพเกรดจากการใช้โมเดลตัวเดียว (`ai-tutor` บน Gemma) มาเป็น **ระบบ Dual Model** ที่รองรับ 2 โมเดลที่มีบุคลิกแตกต่างกัน เพื่อให้ผู้ใช้สังเกตเห็นความแตกต่างในวิธีคิดและการตอบสนองของ AI
+
+---
+
+### 6.2 รายละเอียดโมเดลทั้งสอง
+
+#### 🟣 โมเดลที่ 1: `ai-tutor-qwen` (Deep Thinking Mode)
+
+| รายการ | รายละเอียด |
+|---|---|
+| **Base Model** | `qwen3:8b` (Qwen 3, Alibaba Cloud) |
+| **ปี/รุ่น** | Qwen 3 · 8B Parameters · ปี 2025 |
+| **ขนาด** | ~5.2 GB |
+| **Modelfile** | `Modelfile.qwen` |
+| **Ollama Model Name** | `ai-tutor-qwen` |
+
+**พารามิเตอร์ที่ตั้งค่า:**
+```
+PARAMETER temperature    0.1   # เย็นมาก → ตอบแม่นยำ ไม่เดาสุ่ม
+PARAMETER top_p          0.3   # แคบ → เลือกเฉพาะตัวเลือกที่น่าจะเป็นสูงสุด
+PARAMETER top_k          20    # จำกัดตัวเลือกคำ → precision สูง
+PARAMETER repeat_penalty 1.2   # ป้องกันวนซ้ำ
+PARAMETER num_ctx        8192  # Context Window ที่รองรับ
+```
+
+**บุคลิก (System Prompt):**
+โมเดลนี้ถูกออกแบบให้คิดแบบ **Chain-of-Thought (CoT)** ทุกครั้งก่อนตอบ โดยบังคับให้วิเคราะห์ตาม 4 ขั้นตอน:
+1. **[วิเคราะห์]** ระบุปัญหาหลักจากโจทย์/โค้ด
+2. **[คิดทีละขั้น]** แตกปัญหาเป็น sub-steps และให้เหตุผลแต่ละขั้น
+3. **[ประเมิน]** หา edge case และ worst-case scenario
+4. **[สรุป]** คำตอบสุดท้ายพร้อม Big O
+
+---
+
+#### 🔴 โมเดลที่ 2: `ai-tutor-gemma` (Standard Mode)
+
+| รายการ | รายละเอียด |
+|---|---|
+| **Base Model** | `gemma3:12b` (Gemma 3, Google DeepMind) |
+| **ปี/รุ่น** | Gemma 3 · 12B Parameters · ปี 2025 |
+| **ขนาด** | ~8.1 GB |
+| **Modelfile** | `Modelfile.gemma` |
+| **Ollama Model Name** | `ai-tutor-gemma` |
+
+**พารามิเตอร์ที่ตั้งค่า:**
+```
+PARAMETER temperature 0.4   # ปกติ → ตอบได้หลากหลาย คล่องตัว
+PARAMETER top_p       0.6   # กว้างกว่า → ตอบได้ฉับไว
+PARAMETER num_ctx     8192  # Context Window ที่รองรับ
+```
+
+**บุคลิก (System Prompt):**
+โมเดลนี้ถูกออกแบบให้เป็น **ติวเตอร์มาตรฐาน** ที่ตอบได้กระชับ เป็นกันเอง และอธิบายเข้าใจง่าย โดยยังคงยึดกฎเรื่องการไม่เฉลยโค้ดตรงๆ เช่นกัน
+
+---
+
+### 6.3 ตาราง เปรียบเทียบ (สรุป)
+
+| คุณสมบัติ | `ai-tutor-qwen` | `ai-tutor-gemma` |
+|---|---|---|
+| Base | Qwen3 8B | Gemma3 12B |
+| Temperature | **0.1** (เย็นมาก) | 0.4 (ปกติ) |
+| top_p | **0.3** | 0.6 |
+| top_k | **20** | ไม่จำกัด |
+| repeat_penalty | **1.2** | ไม่ตั้ง |
+| สไตล์การตอบ | **คิดลึก Chain-of-Thought** | **กระชับ เป็นกันเอง** |
+| ความเร็วตอบ | ช้ากว่า (คิดมาก) | เร็วกว่า |
+| ขนาดไฟล์ | 5.2 GB | 8.1 GB |
+
+---
+
+### 6.4 สถาปัตยกรรม Model Routing
+
+เมื่อ Frontend ส่ง Request มา Backend จะ map key → model name ผ่าน `MODEL_MAP`:
+
+```python
+# ai_service.py
+DEFAULT_MODEL = "ai-tutor-qwen"
+MODEL_MAP = {
+    "qwen":  "ai-tutor-qwen",
+    "gemma": "ai-tutor-gemma",
+}
+```
+
+Flow การทำงาน:
+```
+[UI Dropdown] → เลือก "Qwen" หรือ "Google (Gemma)"
+      ↓
+[Frontend JS] → currentModel = 'qwen' หรือ 'gemma'
+      ↓
+[API Request] → POST /api/hint { ..., "model": "qwen" }
+      ↓
+[FastAPI main.py] → model_name = MODEL_MAP.get(request.model, DEFAULT_MODEL)
+      ↓
+[ai_service.py] → ollama.chat(model="ai-tutor-qwen", ...)
+      ↓
+[Ollama Runtime] → โหลด ai-tutor-qwen และ stream ผลลัพธ์กลับ
+```
+
+---
+
+### 6.5 วิธีสร้างหรือ rebuild โมเดล
+
+```bash
+# สร้าง/อัพเดต Qwen model
+ollama create ai-tutor-qwen -f Modelfile.qwen
+
+# สร้าง/อัพเดต Gemma model
+ollama create ai-tutor-gemma -f Modelfile.gemma
+
+# ตรวจสอบโมเดลที่มีทั้งหมด
+ollama list
+```
+

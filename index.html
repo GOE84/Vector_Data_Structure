@@ -1657,15 +1657,15 @@
                                 <div style="display: flex; gap: 8px; align-items: center;">
                                     <div style="position: relative;">
                                         <button class="qwen-select-btn primary" id="providerBtn">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><line x1="12" y1="22" x2="12" y2="15.5"></line><polyline points="22 8.5 12 15.5 2 8.5"></polyline><polyline points="2 15.5 12 8.5 22 15.5"></polyline><line x1="12" y1="2" x2="12" y2="8.5"></line></svg>
-                                            Local Models
+                                            <img src="/assets/logo-qwen.png" width="20" height="20" style="object-fit: contain; mix-blend-mode: screen;" id="providerBtnImg">
+                                            <span id="providerBtnLabel">Qwen</span>
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                         </button>
                                         
                                         <div class="qwen-dropdown-menu" id="providerDropdown">
-                                            <div class="qwen-dp-item">
+                                            <div class="qwen-dp-item" data-model="qwen" data-logo="/assets/logo-qwen.png" data-label="Qwen">
                                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg>
+                                                    <img src="/assets/logo-qwen.png" width="24" height="24" style="object-fit: contain; mix-blend-mode: screen;">
                                                     <div style="display: flex; flex-direction: column; gap: 2px;">
                                                         <span style="color: #f3f4f6; font-size: 0.88rem; font-weight: 500;">Qwen</span>
                                                         <span style="color: #6b7280; font-size: 0.73rem;">Qwen3 · 8B · 2025</span>
@@ -1673,9 +1673,9 @@
                                                 </div>
                                                 <svg class="dp-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                             </div>
-                                            <div class="qwen-dp-item">
+                                            <div class="qwen-dp-item" data-model="gemma" data-logo="/assets/logo-gemma.png" data-label="Google (Gemma)">
                                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                                    <img src="/assets/logo-gemma.png" width="24" height="24" style="object-fit: contain; mix-blend-mode: screen;">
                                                     <div style="display: flex; flex-direction: column; gap: 2px;">
                                                         <span style="color: #f3f4f6; font-size: 0.88rem; font-weight: 500;">Google (Gemma)</span>
                                                         <span style="color: #6b7280; font-size: 0.73rem;">Gemma 3 · 12B · 2025</span>
@@ -2261,38 +2261,34 @@
             pItems.forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const contentDiv = item.querySelector('div');
-                    if (contentDiv) {
-                        const svg = contentDiv.querySelector('svg');
-                        const nameSpan = contentDiv.querySelector('span');
-                        const labelText = nameSpan ? nameSpan.textContent.trim() : '';
 
-                        // Map label → model key
-                        if (labelText.toLowerCase().includes('gemma')) {
-                            currentModel = 'gemma';
-                        } else {
-                            currentModel = 'qwen';
-                        }
+                    // Read data attributes
+                    const modelKey = item.dataset.model;
+                    const logoSrc  = item.dataset.logo;
+                    const label    = item.dataset.label;
 
-                        // Move checkmark: remove from all, add to selected
-                        pItems.forEach(i => {
-                            const existingCheck = i.querySelector('.dp-check');
-                            if (existingCheck) existingCheck.remove();
-                        });
-                        const checkSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                        checkSvg.setAttribute('class', 'dp-check');
-                        checkSvg.setAttribute('width', '14'); checkSvg.setAttribute('height', '14');
-                        checkSvg.setAttribute('viewBox', '0 0 24 24'); checkSvg.setAttribute('fill', 'none');
-                        checkSvg.setAttribute('stroke', '#3b82f6'); checkSvg.setAttribute('stroke-width', '2');
-                        checkSvg.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
-                        item.appendChild(checkSvg);
+                    // Update currentModel
+                    currentModel = modelKey || 'qwen';
 
-                        // Update button text
-                        providerBtn.innerHTML = '';
-                        if(svg) providerBtn.appendChild(svg.cloneNode(true));
-                        providerBtn.appendChild(document.createTextNode(' ' + labelText + ' '));
-                        providerBtn.appendChild(createChevron());
-                    }
+                    // Move checkmark
+                    pItems.forEach(i => {
+                        const existingCheck = i.querySelector('.dp-check');
+                        if (existingCheck) existingCheck.remove();
+                    });
+                    const checkSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    checkSvg.setAttribute('class', 'dp-check');
+                    checkSvg.setAttribute('width', '14'); checkSvg.setAttribute('height', '14');
+                    checkSvg.setAttribute('viewBox', '0 0 24 24'); checkSvg.setAttribute('fill', 'none');
+                    checkSvg.setAttribute('stroke', '#3b82f6'); checkSvg.setAttribute('stroke-width', '2');
+                    checkSvg.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+                    item.appendChild(checkSvg);
+
+                    // Update button: logo + label + chevron
+                    const btnImg = document.getElementById('providerBtnImg');
+                    const btnLbl = document.getElementById('providerBtnLabel');
+                    if (btnImg) btnImg.src = logoSrc;
+                    if (btnLbl) btnLbl.textContent = label;
+
                     providerDropdown.classList.remove('active');
                 });
             });
