@@ -918,24 +918,7 @@
             gap: 8px;
         }
 
-        #chatInput {
-            flex: 1;
-            background: var(--bg-color);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
-            font-family: inherit;
-            resize: none;
-            height: 45px;
-            outline: none;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        #chatInput:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-glow);
-        }
+        /* old #chatInput styling removed to avoid conflicts */
 
         .btn-send-chat {
             background: var(--user-msg);
@@ -965,6 +948,461 @@
             transform: none;
             box-shadow: none;
         }
+
+        /* Analysis Overlay Styles */
+        .analysis-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(9, 8, 18, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .analysis-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .analysis-container {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 85%;
+            max-width: 1000px;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(168, 85, 247, 0.2);
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .analysis-overlay.show .analysis-container {
+            transform: translateY(0);
+        }
+
+        .analysis-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .analysis-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-analysis-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            font-size: 2rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: color 0.2s;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-analysis-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .analysis-content {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            line-height: 1.7;
+            font-size: 1.05rem;
+            color: #e2e8f0;
+        }
+
+        .analysis-content pre {
+            background: #1a1b26;
+            padding: 1.2rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+        
+        .analysis-content code {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .analysis-content h1, .analysis-content h2, .analysis-content h3 {
+            color: #fff;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Profile Dropdown Styles */
+        .user-profile-wrapper {
+            position: relative;
+        }
+
+        .user-profile:hover {
+            background: rgba(255,255,255,0.08) !important;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            width: 330px;
+            background: #2b2b2b;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .profile-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .pd-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-left: 4px;
+        }
+
+        .pd-header img {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .pd-user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .pd-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .pd-premium-text {
+            font-size: 0.85rem;
+            color: #f59e0b;
+            line-height: 1.3;
+            font-weight: 500;
+        }
+
+        .pd-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .pd-grid-item {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 16px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .pd-grid-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .pd-icon-wrapper {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pd-grid-item span {
+            font-size: 0.8rem;
+            color: #d1d5db;
+        }
+
+        .pd-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .pd-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: #d1d5db;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .pd-menu-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+        }
+
+        .pd-menu-item svg {
+            color: #9ca3af;
+        }
+
+        /* Qwen Chat Input Styles */
+        .qwen-input-wrapper {
+            background: #212121;
+            border-radius: 16px;
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+            width: 100%;
+            max-width: 800px;
+            transition: border-color 0.3s;
+        }
+
+        .qwen-input-wrapper:focus-within {
+            border-color: #6366f1;
+        }
+
+        .qwen-input-wrapper textarea {
+            background: transparent;
+            border: none;
+            color: #f3f4f6;
+            font-size: 0.95rem;
+            resize: none;
+            outline: none;
+            width: 100%;
+            min-height: 24px;
+            max-height: 200px;
+            font-family: inherit;
+            padding: 4px 0;
+            overflow-y: hidden;
+            line-height: 1.5;
+        }
+
+        .qwen-input-wrapper textarea::placeholder {
+            color: #6b7280;
+        }
+
+        .qwen-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .qwen-select-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        .qwen-select-btn.primary {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #f3f4f6;
+        }
+        
+        .qwen-select-btn.primary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .qwen-select-btn:not(.primary):hover {
+            color: #f3f4f6;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .qwen-toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .qwen-switch {
+            position: relative;
+            display: inline-block;
+            width: 38px;
+            height: 20px;
+        }
+
+        .qwen-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .qwen-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #4b5563;
+            transition: .3s;
+            border-radius: 20px;
+        }
+
+        .qwen-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        .qwen-switch input:checked + .qwen-slider {
+            background-color: #f3f4f6;
+        }
+
+        .qwen-switch input:checked + .qwen-slider:before {
+            transform: translateX(18px);
+            background-color: #4b5563;
+        }
+
+        .qwen-submit-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #4b5563;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #1e1e1e;
+            transition: all 0.2s;
+        }
+        
+        .qwen-submit-btn:hover {
+            background: #6b7280;
+        }
+
+        .qwen-submit-btn.active {
+            background: #e5e7eb;
+            color: #1e1e1e;
+        }
+        
+        .qwen-submit-btn.active:hover {
+            background: #f3f4f6;
+        }
+
+        .qwen-dropdown-menu {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 0;
+            background: #2b2b2b;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 200px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+        }
+
+        .qwen-dropdown-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .qwen-dp-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: #d1d5db;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.2s;
+        }
+
+        .qwen-dp-item:hover {
+            background: rgba(255,255,255,0.06);
+            color: white;
+        }
+
+        .qwen-badge {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
     </style>
 </head>
 
@@ -974,10 +1412,78 @@
     <div class="header">
         <h1>🤖 AI Tutor (Beta)</h1>
         <div class="settings" style="display: flex; gap: 15px; align-items: center;">
-            <div class="user-profile" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 4px 12px 4px 4px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); transition: all 0.2s ease;">
-                <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&rounded=true" alt="Profile" style="width: 28px; height: 28px; border-radius: 50%;">
-                <span style="font-size: 0.85rem; font-weight: 500; color: #e2e8f0;">User</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            <div class="user-profile-wrapper">
+                <div class="user-profile" id="userProfileBtn" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 4px 12px 4px 4px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); transition: all 0.2s ease;">
+                    <img src="https://ui-avatars.com/api/?name=GOE&background=6366f1&color=fff&rounded=true" alt="Profile" style="width: 28px; height: 28px; border-radius: 50%;">
+                    <span style="font-size: 0.85rem; font-weight: 500; color: #e2e8f0;">GOE</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                
+                <!-- The Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="pd-header">
+                        <img src="https://ui-avatars.com/api/?name=GOE&background=6366f1&color=fff&rounded=true" alt="Avatar">
+                        <div class="pd-user-info">
+                            <div class="pd-name">GOE</div>
+                            <div class="pd-premium-text">Access all features with our Premium subscription!</div>
+                        </div>
+                    </div>
+                    
+                    <div class="pd-grid">
+                        <div class="pd-grid-item">
+                            <div class="pd-icon-wrapper" style="color: #fca5a5;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                            </div>
+                            <span>My Lists</span>
+                        </div>
+                        <div class="pd-grid-item">
+                            <div class="pd-icon-wrapper" style="color: #60a5fa;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                            </div>
+                            <span>Notebook</span>
+                        </div>
+                        <div class="pd-grid-item">
+                            <div class="pd-icon-wrapper" style="color: #34d399;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                            </div>
+                            <span>Progress</span>
+                        </div>
+                        <div class="pd-grid-item" style="grid-column: 1;">
+                            <div class="pd-icon-wrapper" style="color: #fbbf24; background: rgba(251,191,36,0.15); border-radius: 50%;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            </div>
+                            <span>Points</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pd-menu">
+                        <div class="pd-menu-item">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"></path><path d="M14 9.3V1.99"></path><path d="M8.5 2h7"></path><path d="M14 9.3a6.5 6.5 0 1 1-4 0"></path><path d="M5.52 16h12.96"></path></svg>
+                            <span>Try New Features</span>
+                        </div>
+                        <div class="pd-menu-item">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><line x1="9" y1="14" x2="15" y2="14"></line><line x1="9" y1="18" x2="15" y2="18"></line><line x1="9" y1="10" x2="9.01" y2="10"></line></svg>
+                            <span>Orders</span>
+                        </div>
+                        <div class="pd-menu-item">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                            <span>My Playgrounds</span>
+                        </div>
+                        <div class="pd-menu-item">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                            <span>Settings</span>
+                        </div>
+                        <div class="pd-menu-item">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                            <span style="flex: 1;">Appearance</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        <div class="pd-menu-item" style="border-top: 1px solid rgba(255,255,255,0.05); margin-top: 6px; padding-top: 16px; margin-bottom: 6px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                            <span>Sign Out</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.1);"></div>
@@ -1142,23 +1648,81 @@
                         <!-- Messages dynamically inserted here -->
                     </div>
 
-                    <div class="chat-input-area" style="background: transparent; border-top: none;">
-                        <div class="chat-input-wrapper gemini-input">
-                            <textarea id="chatInput" class="gemini-style" placeholder="Ask Gemini..."
-                                rows="1"></textarea>
-                            <button class="btn-send-chat" id="sendBtn"
-                                style="border-radius: 50%; width: 40px; height: 40px; min-width: 40px;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-                                </svg>
-                            </button>
+                    <div class="chat-input-area" style="background: transparent; border-top: none; align-items: center;">
+                        <div class="qwen-input-wrapper">
+                            <textarea id="chatInput" placeholder="Message Qwen..." rows="1" oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 200) + 'px'"></textarea>
+                            
+                            <div class="qwen-controls">
+                                <!-- Left side -->
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <div style="position: relative;">
+                                        <button class="qwen-select-btn primary" id="providerBtn">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><line x1="12" y1="22" x2="12" y2="15.5"></line><polyline points="22 8.5 12 15.5 2 8.5"></polyline><polyline points="2 15.5 12 8.5 22 15.5"></polyline><line x1="12" y1="2" x2="12" y2="8.5"></line></svg>
+                                            Local Models
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                        </button>
+                                        
+                                        <div class="qwen-dropdown-menu" id="providerDropdown">
+                                            <div class="qwen-dp-item">
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg>
+                                                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                                                        <span style="color: #f3f4f6; font-size: 0.88rem; font-weight: 500;">Qwen</span>
+                                                        <span style="color: #6b7280; font-size: 0.73rem;">Qwen3 · 8B · 2025</span>
+                                                    </div>
+                                                </div>
+                                                <svg class="dp-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            </div>
+                                            <div class="qwen-dp-item">
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                                                        <span style="color: #f3f4f6; font-size: 0.88rem; font-weight: 500;">Google (Gemma)</span>
+                                                        <span style="color: #6b7280; font-size: 0.73rem;">Gemma 3 · 12B · 2025</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- modelBtn removed -->
+                                </div>
+                                
+                                <!-- Right side -->
+                                <div class="qwen-toggle-wrapper">
+                                    <label class="qwen-switch">
+                                        <input type="checkbox" id="agentToggle" checked>
+                                        <span class="qwen-slider"></span>
+                                    </label>
+                                    <span style="color: #f3f4f6; font-weight: 600; font-size: 0.95rem; margin-right: 4px;">Agent</span>
+                                    
+                                    <button class="qwen-submit-btn" id="sendBtn">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="19" x2="12" y2="5"></line>
+                                            <polyline points="5 12 12 5 19 12"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+    </div>
+
+    <!-- Analysis Overlay Page -->
+    <div id="analysisOverlay" class="analysis-overlay">
+        <div class="analysis-container">
+            <div class="analysis-header">
+                <h2><span style="background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; background-clip: text; color: transparent;">✨</span> Code Analysis Report</h2>
+                <button id="closeAnalysisBtn" class="close-analysis-btn">×</button>
+            </div>
+            <div id="analysisContent" class="analysis-content">
+                <!-- AI stream output will go here -->
+            </div>
+        </div>
     </div>
 
     <!-- Monaco Editor Script -->
@@ -1579,6 +2143,7 @@
         async function requestAIStream(endpoint, payload, userDisplayMsg) {
             if (!currentQuestionId) return;
             payload.question_id = currentQuestionId;
+            payload.model = currentModel;
 
             const streamSessionId = currentSessionId;
             appendMessage('user', userDisplayMsg, false);
@@ -1655,20 +2220,157 @@
             const text = chatInput.value.trim();
             if (!text) return;
             chatInput.value = '';
+            chatInput.style.height = '24px';
+            sendBtn.classList.remove('active');
             requestAIStream('/api/hint', { student_question: text }, `💬 ถาม: ${text}`);
+        });
+
+        // Track selected model from dropdown
+        let currentModel = 'qwen'; // default
+
+        chatInput.addEventListener('input', () => {
+            const text = chatInput.value.trim();
+            if (text) sendBtn.classList.add('active');
+            else sendBtn.classList.remove('active');
         });
 
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendBtn.click(); }
         });
 
+        // Qwen Input Interactions
+        const providerBtn = document.getElementById('providerBtn');
+        const providerDropdown = document.getElementById('providerDropdown');
+
+        function createChevron() {
+            const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            chevron.setAttribute('width', '12'); chevron.setAttribute('height', '12');
+            chevron.setAttribute('viewBox', '0 0 24 24'); chevron.setAttribute('fill', 'none');
+            chevron.setAttribute('stroke', 'currentColor'); chevron.setAttribute('stroke-width', '2');
+            chevron.innerHTML = '<polyline points="6 9 12 15 18 9"></polyline>';
+            return chevron;
+        }
+
+        if (providerBtn && providerDropdown) {
+            providerBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                providerDropdown.classList.toggle('active');
+            });
+
+            const pItems = providerDropdown.querySelectorAll('.qwen-dp-item');
+            pItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const contentDiv = item.querySelector('div');
+                    if (contentDiv) {
+                        const svg = contentDiv.querySelector('svg');
+                        const nameSpan = contentDiv.querySelector('span');
+                        const labelText = nameSpan ? nameSpan.textContent.trim() : '';
+
+                        // Map label → model key
+                        if (labelText.toLowerCase().includes('gemma')) {
+                            currentModel = 'gemma';
+                        } else {
+                            currentModel = 'qwen';
+                        }
+
+                        // Move checkmark: remove from all, add to selected
+                        pItems.forEach(i => {
+                            const existingCheck = i.querySelector('.dp-check');
+                            if (existingCheck) existingCheck.remove();
+                        });
+                        const checkSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        checkSvg.setAttribute('class', 'dp-check');
+                        checkSvg.setAttribute('width', '14'); checkSvg.setAttribute('height', '14');
+                        checkSvg.setAttribute('viewBox', '0 0 24 24'); checkSvg.setAttribute('fill', 'none');
+                        checkSvg.setAttribute('stroke', '#3b82f6'); checkSvg.setAttribute('stroke-width', '2');
+                        checkSvg.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+                        item.appendChild(checkSvg);
+
+                        // Update button text
+                        providerBtn.innerHTML = '';
+                        if(svg) providerBtn.appendChild(svg.cloneNode(true));
+                        providerBtn.appendChild(document.createTextNode(' ' + labelText + ' '));
+                        providerBtn.appendChild(createChevron());
+                    }
+                    providerDropdown.classList.remove('active');
+                });
+            });
+        }
+
+        // modelBtn logic removed
+
+        document.addEventListener('click', (e) => {
+            if (providerDropdown && !providerDropdown.contains(e.target) && !providerBtn.contains(e.target)) {
+                providerDropdown.classList.remove('active');
+            }
+        });
+
+        const analysisOverlay = document.getElementById('analysisOverlay');
+        const closeAnalysisBtn = document.getElementById('closeAnalysisBtn');
+        const analysisContent = document.getElementById('analysisContent');
+
+        closeAnalysisBtn.addEventListener('click', () => {
+            analysisOverlay.classList.remove('show');
+            setTimeout(() => { analysisOverlay.style.display = 'none'; }, 300);
+        });
+
+        async function requestAnalysisStream(endpoint, payload) {
+            if (!currentQuestionId) return;
+            payload.question_id = currentQuestionId;
+
+            const btnStates = disableInputs(true);
+            
+            // Show overlay
+            analysisOverlay.style.display = 'flex';
+            // Trigger reflow for animation
+            void analysisOverlay.offsetWidth;
+            analysisOverlay.classList.add('show');
+            
+            analysisContent.innerHTML = `
+                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: var(--text-sub);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem; animation: pulseGlow 2s infinite;">⏳</div>
+                    <div>กำลังวิเคราะห์โค้ดของคุณ...</div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+                analysisContent.innerHTML = ''; // Clear loading
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let aiResponseContent = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        break;
+                    }
+                    aiResponseContent += decoder.decode(value, { stream: true });
+                    analysisContent.innerHTML = renderMarkdown(aiResponseContent);
+                    applySyntaxHighlighting(analysisContent);
+                    // No need to auto-scroll here as the user might want to read from the top
+                }
+            } catch (error) {
+                analysisContent.innerHTML = `<div style="color: #ef4444; padding: 1rem; border: 1px solid #ef4444; border-radius: 8px; background: rgba(239, 68, 68, 0.1);">❌ Connection Error: ${error.message}</div>`;
+            } finally {
+                disableInputs(false, btnStates);
+            }
+        }
+
         // Action: Analyze Code (from editor)
         btnAnalyzeCode.addEventListener('click', () => {
             if (!myEditor) return;
-            openAiPanel();
             const code = myEditor.getValue();
             previousCode = code; // Save for future comparison
-            requestAIStream('/api/analyze', { student_code: code }, `🔍 [Analyze Code]\nส่งโค้ดความยาว ${code.length} ตัวอักษรไปให้ AI รีวิว`);
+            requestAnalysisStream('/api/analyze', { student_code: code, model: currentModel });
         });
 
         // Action: Compare Code
@@ -1682,7 +2384,8 @@
             }
             requestAIStream('/api/compare', {
                 old_code: previousCode,
-                new_code: currentCode
+                new_code: currentCode,
+                model: currentModel
             }, `⚖️ [Compare Code]\nเทียบบทแก้ไขล่าสุดกับผลงานเดิม`);
             previousCode = currentCode; // update
         });
@@ -1705,9 +2408,33 @@
                 const response = await fetch('/ingest', { method: 'POST', body: formData });
                 if (!response.ok) throw new Error("Upload Failed");
                 const data = await response.json();
-                appendMessage('ai', `✅ เรียนรู้ไฟล์สำเร็จ: **${data.filename || file.name}**`, true);
+                appendMessage('ai', `✅ สร้างโจทย์จากไฟล์สำเร็จ: **${file.name}**`, true);
+                
+                // Refresh the list to show the new question
+                await loadQuestions();
+                
+                // Select the newly added mock question
+                if (data.new_id) {
+                    questionSelect.value = data.new_id;
+                    questionSelect.dispatchEvent(new Event('change'));
+                }
             } catch (error) {
                 appendMessage('ai', `❌ เกิดข้อผิดพลาด: ${error.message}`);
+            }
+        });
+
+        // Profile Dropdown Logic
+        const userProfileBtn = document.getElementById('userProfileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        userProfileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!profileDropdown.contains(e.target) && !userProfileBtn.contains(e.target)) {
+                profileDropdown.classList.remove('active');
             }
         });
     </script>

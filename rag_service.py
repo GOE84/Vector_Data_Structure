@@ -29,14 +29,16 @@ class RAGService:
         loader = PyPDFLoader(file_path)
         documents = loader.load()
         
+        full_text = "\n\n".join([doc.page_content for doc in documents])
+        
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
         chunks = text_splitter.split_documents(documents)
         
         if chunks:
             self.db.add_documents(chunks)
             print(f"Successfully ingested {len(chunks)} chunks from {file_path}")
-            return f"Ingested {len(chunks)} chunks."
-        return "No text found in PDF."
+            return {"message": f"Ingested {len(chunks)} chunks.", "text": full_text}
+        return {"message": "No text found in PDF.", "text": full_text}
 
     def get_context(self, query: str, k: int = 3):
         """Retrieves relevant chunks from ChromaDB for a given query."""

@@ -7,12 +7,16 @@ from pydantic import BaseModel
 from typing import Optional
 import tempfile
 import subprocess
+import uuid
 
 from rag_service import rag_service
 from ai_service import (
+    generate_title_from_text,
     generate_pre_submit_hint,
     generate_post_submit_analysis,
-    generate_code_comparison
+    generate_code_comparison,
+    MODEL_MAP,
+    DEFAULT_MODEL
 )
 
 app = FastAPI(title="Vector Problem AI Tutor API")
@@ -174,15 +178,18 @@ MOCK_QUESTIONS_DB = {
 class HintRequest(BaseModel):
     question_id: str
     student_question: str
+    model: Optional[str] = None
 
 class AnalyzeRequest(BaseModel):
     question_id: str
     student_code: str
+    model: Optional[str] = None
 
 class CompareRequest(BaseModel):
     question_id: str
     old_code: str
     new_code: str
+    model: Optional[str] = None
 
 class RunRequest(BaseModel):
     code: str
@@ -220,7 +227,29 @@ async def ingest_pdf(file: UploadFile = File(...)):
     if os.path.exists(temp_file_path):
         os.remove(temp_file_path)
         
-    return {"message": "PDF successfully ingested into Vector DB.", "details": result}
+    # Add to mock database so it shows up in the UI
+    extracted_text = result.get("text", "") if isinstance(result, dict) else ""
+    description_content = extracted_text.strip() if extracted_text.strip() else f"โจทย์ปัญหาถูกดึงเนื้อหามาจากไฟล์ **{file.filename}** ระบบ AI จะใช้ข้อมูลจาก PDF นี้เพื่อช่วยเหลือและให้คำแนะนำในการเขียนโค้ดของคุณ"
+    
+    new_q_id = f"q_up_{uuid.uuid4().hex[:6]}"
+    
+    # Generate title using AI if text is available, else fallback to filename
+    file_title = generate_title_from_text(extracted_text) if extracted_text.strip() else file.filename.replace(".pdf", "").replace("_", " ").title()
+    
+    MOCK_QUESTIONS_DB[new_q_id] = {
+        "id": new_q_id,
+        "title": f"📑 [Uploaded] {file_title}",
+        "description": description_content[:2500] + ("...\n\n*(เนื้อหาบางส่วนถูกตัดทอน)*" if len(description_content) > 2500 else ""),
+        "constraints": "รายละเอียดตามที่ระบุในไฟล์ PDF",
+        "difficulty": "Custom",
+        "expected_complexity": "N/A",
+        "time_limit": 1000,
+        "memory_limit": 256,
+        "starter_code": "def solution():\n    # Write your code here\n    pass\n"
+    }
+
+    message = result.get("message", str(result)) if isinstance(result, dict) else result
+    return {"message": "PDF successfully ingested into Vector DB.", "details": message, "new_id": new_q_id}
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -253,11 +282,11 @@ async def get_hint(request: HintRequest):
     1. Pre-submit: Get a hint without receiving code.
     """
     metadata = get_question_metadata(request.question_id)
-    # Query RAG using title + description to extract context
     context = rag_service.get_context(metadata["title"] + " " + metadata["description"])
-    
+    model_name = MODEL_MAP.get(request.model, DEFAULT_MODEL) if request.model else DEFAULT_MODEL
+
     return StreamingResponse(
-        generate_pre_submit_hint(context, metadata, request.student_question),
+        generate_pre_submit_hint(context, metadata, request.student_question, model_name),
         media_type="text/plain"
     )
 
@@ -269,9 +298,10 @@ async def analyze_code(request: AnalyzeRequest):
     """
     metadata = get_question_metadata(request.question_id)
     context = rag_service.get_context(metadata["title"] + " " + metadata["description"])
-    
+    model_name = MODEL_MAP.get(request.model, DEFAULT_MODEL) if request.model else DEFAULT_MODEL
+
     return StreamingResponse(
-        generate_post_submit_analysis(context, metadata, request.student_code),
+        generate_post_submit_analysis(context, metadata, request.student_code, model_name),
         media_type="text/plain"
     )
 
@@ -283,9 +313,10 @@ async def compare_code(request: CompareRequest):
     """
     metadata = get_question_metadata(request.question_id)
     context = rag_service.get_context(metadata["title"] + " " + metadata["description"])
-    
+    model_name = MODEL_MAP.get(request.model, DEFAULT_MODEL) if request.model else DEFAULT_MODEL
+
     return StreamingResponse(
-        generate_code_comparison(context, metadata, request.old_code, request.new_code),
+        generate_code_comparison(context, metadata, request.old_code, request.new_code, model_name),
         media_type="text/plain"
     )
 
