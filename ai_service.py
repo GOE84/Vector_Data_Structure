@@ -1,6 +1,6 @@
 import ollama
 
-DEFAULT_MODEL = "ai-tutor-qwen"
+DEFAULT_MODEL = "ai-tutor-gemma"
 MODEL_MAP = {
     "qwen": "ai-tutor-qwen",
     "gemma": "ai-tutor-gemma",
@@ -24,7 +24,7 @@ def generate_title_from_text(text: str, model_name: str = DEFAULT_MODEL) -> str:
     return "Untitled Problem"
 
 
-def generate_pre_submit_hint(context: str, task_metadata: dict, student_question: str, model_name: str = DEFAULT_MODEL):
+def generate_pre_submit_hint(context: str, task_metadata: dict, student_question: str, model_name: str = DEFAULT_MODEL, fast_mode: bool = False):
     system_message = """คุณคือ AI ติวเตอร์ที่ช่วยนักเรียนแก้ปัญหาเกี่ยวกับโครงสร้างข้อมูลเวกเตอร์ (vector data structure)
 
 กฎสำคัญ:
@@ -68,16 +68,18 @@ memory limit: {task_metadata.get('memory_limit', '')} MB
 4. หลีกเลี่ยงการเขียนโค้ดเฉลยในภาษาโปรแกรมจริง (อนุญาต pseudo-code ระดับสูงเฉพาะเมื่อจำเป็น)
 5. ให้กำลังใจและชวนให้ผู้ทำโจทย์ลองเขียนโค้ดเอง"""
 
+    options = {'num_ctx': 4000} if fast_mode else {}
+    
     response_stream = ollama.chat(model=model_name, messages=[
         {'role': 'system', 'content': system_message},
         {'role': 'user', 'content': user_message}
-    ], stream=True)
+    ], stream=True, options=options)
     for chunk in response_stream:
         if 'message' in chunk and 'content' in chunk['message']:
             yield chunk['message']['content']
 
 
-def generate_post_submit_analysis(context: str, task_metadata: dict, student_code: str, model_name: str = DEFAULT_MODEL):
+def generate_post_submit_analysis(context: str, task_metadata: dict, student_code: str, model_name: str = DEFAULT_MODEL, fast_mode: bool = False):
     system_message = """คุณคือ AI ติวเตอร์ตรวจโค้ดที่อธิบายเก่ง กระชับ และเข้าใจง่าย
 
 กฎสำคัญ:
@@ -118,16 +120,18 @@ memory limit: {task_metadata.get('memory_limit', '')} MB
 2. ⚡ **ประสิทธิภาพ (Big O):** Time/Space Complexity ของโค้ดนี้คืออะไร และผ่านเกณฑ์ที่โจทย์กำหนดหรือไม่?
 3. 💡 **คำแนะนำ & โค้ดที่เร็วกว่า:** แนะนำจุดที่ควรแก้ให้โค้ดคลีนขึ้น หรือถ้ามีวิธีที่เร็วกว่าให้ยกตัวอย่างโค้ดสั้นๆ พร้อมอธิบายจุดสำคัญ"""
 
+    options = {'num_ctx': 4000} if fast_mode else {}
+
     response_stream = ollama.chat(model=model_name, messages=[
         {'role': 'system', 'content': system_message},
         {'role': 'user', 'content': user_message}
-    ], stream=True)
+    ], stream=True, options=options)
     for chunk in response_stream:
         if 'message' in chunk and 'content' in chunk['message']:
             yield chunk['message']['content']
 
 
-def generate_code_comparison(context: str, task_metadata: dict, old_code: str, new_code: str, model_name: str = DEFAULT_MODEL):
+def generate_code_comparison(context: str, task_metadata: dict, old_code: str, new_code: str, model_name: str = DEFAULT_MODEL, fast_mode: bool = False):
     system_message = """คุณคือ AI ติวเตอร์และผู้รีวิวโค้ด ที่ช่วยนักเรียนเปรียบเทียบโค้ดสองเวอร์ชันสำหรับโจทย์โครงสร้างข้อมูลเวกเตอร์ (vector data structure)
 
 กฎสำคัญ:
@@ -173,10 +177,12 @@ memory limit: {task_metadata.get('memory_limit', '')} MB
 4. เปรียบเทียบ time complexity และ space complexity ระหว่างเวอร์ชันเก่าและใหม่
 5. ให้คำแนะนำเชิงรูปธรรมว่าควรปรับเวอร์ชันใหม่อย่างไรให้ดีกว่าเดิมอย่างชัดเจน"""
 
+    options = {'num_ctx': 4000} if fast_mode else {}
+
     response_stream = ollama.chat(model=model_name, messages=[
         {'role': 'system', 'content': system_message},
         {'role': 'user', 'content': user_message}
-    ], stream=True)
+    ], stream=True, options=options)
     for chunk in response_stream:
         if 'message' in chunk and 'content' in chunk['message']:
             yield chunk['message']['content']

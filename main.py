@@ -183,17 +183,20 @@ class HintRequest(BaseModel):
     question_id: str
     student_question: str
     model: Optional[str] = None
+    fast_mode: bool = False
 
 class AnalyzeRequest(BaseModel):
     question_id: str
     student_code: str
     model: Optional[str] = None
+    fast_mode: bool = False
 
 class CompareRequest(BaseModel):
     question_id: str
     old_code: str
     new_code: str
     model: Optional[str] = None
+    fast_mode: bool = False
 
 class RunRequest(BaseModel):
     code: str
@@ -290,7 +293,7 @@ async def get_hint(request: HintRequest):
     model_name = MODEL_MAP.get(request.model, DEFAULT_MODEL) if request.model else DEFAULT_MODEL
 
     return StreamingResponse(
-        generate_pre_submit_hint(context, metadata, request.student_question, model_name),
+        generate_pre_submit_hint(context, metadata, request.student_question, model_name, request.fast_mode),
         media_type="text/plain"
     )
 
@@ -305,7 +308,7 @@ async def analyze_code(request: AnalyzeRequest):
     model_name = MODEL_MAP.get(request.model, DEFAULT_MODEL) if request.model else DEFAULT_MODEL
 
     return StreamingResponse(
-        generate_post_submit_analysis(context, metadata, request.student_code, model_name),
+        generate_post_submit_analysis(context, metadata, request.student_code, model_name, request.fast_mode),
         media_type="text/plain"
     )
 
@@ -320,7 +323,7 @@ async def compare_code(request: CompareRequest):
     model_name = MODEL_MAP.get(request.model, DEFAULT_MODEL) if request.model else DEFAULT_MODEL
 
     return StreamingResponse(
-        generate_code_comparison(context, metadata, request.old_code, request.new_code, model_name),
+        generate_code_comparison(context, metadata, request.old_code, request.new_code, model_name, request.fast_mode),
         media_type="text/plain"
     )
 
