@@ -1746,6 +1746,10 @@
                 <div class="analysis-header" style="justify-content: flex-end;">
                     <button id="closeDiffBtn" class="close-analysis-btn">×</button>
                 </div>
+                <div style="padding: 0.5rem 0.75rem 0; flex-shrink: 0;">
+                    <label for="compareQuestionInput" style="display:block; font-size: 0.75rem; color: var(--text-sub); margin-bottom: 0.35rem;">คำถาม / โฟกัสการเปรียบเทียบ (ไม่บังคับ)</label>
+                    <textarea id="compareQuestionInput" rows="2" placeholder="เช่น อยากรู้ว่า Big O ดีขึ้นไหม หรือเวอร์ชันใหม่อ่านง่ายกว่าไหม" style="width:100%; resize:vertical; min-height:48px; padding:0.5rem; border-radius:6px; border:1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.35); color: var(--text-main); font-size: 0.85rem; box-sizing: border-box;"></textarea>
+                </div>
                 <div id="diffExplanationContent" class="analysis-content">
                     <div style="display:flex; justify-content:center; align-items:center; height:100%; color:var(--text-sub);">Loading explanation...</div>
                 </div>
@@ -1924,7 +1928,7 @@
         const btnCompareCode = document.getElementById('btnCompareCode');
 
         // State
-        let currentQuestionId = null;
+        let currentQuestionCode = null;
         let myEditor = null;
         let myDiffEditor = null;
         let previousCode = ""; // Stored for comparison mode
@@ -1952,14 +1956,16 @@
                 questionSelect.innerHTML = '';
                 questions.forEach(q => {
                     const opt = document.createElement('option');
-                    opt.value = q.id;
-                    opt.textContent = `${q.id.toUpperCase()}: ${q.title}`;
+                    const code = q.code || q.id;
+                    opt.value = code;
+                    opt.textContent = `${String(code).toUpperCase()}: ${q.title}`;
                     questionSelect.appendChild(opt);
                 });
 
                 if (questions.length > 0) {
-                    questionSelect.value = questions[0].id;
-                    loadProblemDetails(questions[0].id);
+                    const first = questions[0].code || questions[0].id;
+                    questionSelect.value = first;
+                    loadProblemDetails(first);
                 }
             } catch (err) {
                 console.error("Failed to load questions", err);
@@ -1967,9 +1973,9 @@
         }
 
         async function loadProblemDetails(qId) {
-            currentQuestionId = qId;
+            currentQuestionCode = qId;
             try {
-                const res = await fetch(`/api/questions/${qId}`);
+                const res = await fetch(`/api/questions/${encodeURIComponent(qId)}`);
                 if (!res.ok) throw new Error("Failed to load details");
                 const data = await res.json();
 
@@ -1996,7 +2002,7 @@
                     <div class="problem-section">
                         <h3>Constraints:</h3>
                         <div class="constraints-box">
-                            ${data.constraints.replace(/\n/g, '<br>')}
+                            ${(data.constraints || '').replace(/\n/g, '<br>')}
                         </div>
                     </div>
                     
@@ -2170,8 +2176,8 @@
 
         // When stream finishes, we update the saved content since we appended an empty string initially!
         async function requestAIStream(endpoint, payload, userDisplayMsg) {
-            if (!currentQuestionId) return;
-            payload.question_id = currentQuestionId;
+            if (!currentQuestionCode) return;
+            payload.question_code = currentQuestionCode;
             payload.model = currentModel;
             payload.fast_mode = false;
 
@@ -2355,8 +2361,9 @@
         });
 
         async function requestAnalysisStream(endpoint, payload) {
-            if (!currentQuestionId) return;
-            payload.question_id = currentQuestionId;
+            if (!currentQuestionCode) return;
+            payload.question_code = currentQuestionCode;
+            payload.model = currentModel;
             payload.fast_mode = false;
 
             const btnStates = disableInputs(true);
@@ -2408,8 +2415,9 @@
 
 
         async function requestDiffExplanationStream(endpoint, payload) {
-            if (!currentQuestionId) return;
-            payload.question_id = currentQuestionId;
+            if (!currentQuestionCode) return;
+            payload.question_code = currentQuestionCode;
+            payload.model = currentModel;
             payload.fast_mode = false;
 
             const diffExplanationContent = document.getElementById('diffExplanationContent');
@@ -2477,10 +2485,13 @@
                 modified: monaco.editor.createModel(currentCode, "python")
             });
             
+            const compareQuestionEl = document.getElementById('compareQuestionInput');
+            const student_question = compareQuestionEl ? compareQuestionEl.value.trim() : '';
             requestDiffExplanationStream('/api/compare', {
                 old_code: previousCode,
                 new_code: currentCode,
-                model: currentModel
+                model: currentModel,
+                ...(student_question ? { student_question } : {})
             });
 
             previousCode = currentCode; // update

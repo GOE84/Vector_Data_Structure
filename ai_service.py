@@ -1,9 +1,14 @@
+import os
 import ollama
 
-DEFAULT_MODEL = "ai-tutor-gemma"
+# ชื่อโมเดลต้องตรงกับ `ollama list` (สร้างด้วย `ollama create ... -f Modelfile`)
+# gemma: ค่าเริ่มต้นใช้ `ai-tutor` (Modelfile หลัก) — ถ้าใช้ Modelfile.gemma ให้รัน
+#   ollama create ai-tutor-gemma -f Modelfile.gemma
+# แล้วตั้ง OLLAMA_MODEL_GEMMA=ai-tutor-gemma
+DEFAULT_MODEL = os.environ.get("OLLAMA_CHAT_MODEL", "ai-tutor")
 MODEL_MAP = {
-    "qwen": "ai-tutor-qwen",
-    "gemma": "ai-tutor-gemma",
+    "qwen": os.environ.get("OLLAMA_MODEL_QWEN", "ai-tutor-qwen"),
+    "gemma": os.environ.get("OLLAMA_MODEL_GEMMA", "ai-tutor"),
 }
 
 def generate_title_from_text(text: str, model_name: str = DEFAULT_MODEL) -> str:
@@ -131,13 +136,29 @@ memory limit: {task_metadata.get('memory_limit', '')} MB
             yield chunk['message']['content']
 
 
-def generate_code_comparison(context: str, task_metadata: dict, old_code: str, new_code: str, model_name: str = DEFAULT_MODEL, fast_mode: bool = False):
+def generate_code_comparison(
+    context: str,
+    task_metadata: dict,
+    old_code: str,
+    new_code: str,
+    model_name: str = DEFAULT_MODEL,
+    fast_mode: bool = False,
+    student_question: str = "",
+):
     system_message = """คุณคือ AI ติวเตอร์และผู้รีวิวโค้ด ที่ช่วยนักเรียนเปรียบเทียบโค้ดสองเวอร์ชันสำหรับโจทย์โครงสร้างข้อมูลเวกเตอร์ (vector data structure)
 
 กฎสำคัญ:
 - โหมดปัจจุบันคือ "เปรียบเทียบโค้ดเวอร์ชันเก่าและใหม่ (code comparison)"
 - ต้องระบุให้ชัดว่าการเปลี่ยนแปลงโดยรวมดีขึ้น แย่ลง หรือใกล้เคียงเดิม
-- ต้องระบุทั้งจุดที่ดีขึ้นและจุดที่แย่ลงในเชิง correctness, readability, efficiency, และความเสี่ยงต่อบั๊ก"""
+- ต้องระบุทั้งจุดที่ดีขึ้นและจุดที่แย่ลงในเชิง correctness, readability, efficiency, และความเสี่ยงต่อบั๊ก
+- ถ้าผู้เรียนระบุคำถามหรือโฟกัสเพิ่มเติม ให้ตอบให้ครอบคลุมคำถามนั้นเป็นพิเศษ"""
+
+    focus_q = (student_question or "").strip()
+    focus_block = (
+        focus_q
+        if focus_q
+        else "(ไม่มีคำถามเพิ่มเติม — เปรียบเทียบภาพรวมตามโจทย์)"
+    )
 
     user_message = f"""<โหมดการใช้งาน>
 compare
@@ -162,6 +183,10 @@ memory limit: {task_metadata.get('memory_limit', '')} MB
 {context}
 </บริบทเพิ่มเติมจาก PDF / vector DB>
 
+<คำถามหรือโฟกัสจากผู้เรียน (เกี่ยวกับการเปรียบเทียบสองเวอร์ชันนี้)>
+{focus_block}
+</คำถามหรือโฟกัสจากผู้เรียน>
+
 <โค้ดเวอร์ชันเก่า>
 {old_code}
 </โค้ดเวอร์ชันเก่า>
@@ -172,10 +197,11 @@ memory limit: {task_metadata.get('memory_limit', '')} MB
 
 โปรดตอบในรูปแบบ:
 1. สรุปโดยรวมว่าเวอร์ชันใหม่ "ดีขึ้น", "แย่ลง" หรือ "ใกล้เคียงเดิม"
-2. ระบุสิ่งที่ดีขึ้นในเวอร์ชันใหม่ (เช่น correctness, readability, time/space complexity, ความยืดหยุ่น)
-3. ระบุสิ่งที่แย่ลงหรือเสี่ยงเกิดบั๊กมากขึ้น
-4. เปรียบเทียบ time complexity และ space complexity ระหว่างเวอร์ชันเก่าและใหม่
-5. ให้คำแนะนำเชิงรูปธรรมว่าควรปรับเวอร์ชันใหม่อย่างไรให้ดีกว่าเดิมอย่างชัดเจน"""
+2. ถ้าผู้เรียนมีคำถาม/โฟกัส ให้ตอบคำถามนั้นโดยตรงก่อน แล้วค่อยเชื่อมกับความต่างของสองเวอร์ชัน
+3. ระบุสิ่งที่ดีขึ้นในเวอร์ชันใหม่ (เช่น correctness, readability, time/space complexity, ความยืดหยุ่น)
+4. ระบุสิ่งที่แย่ลงหรือเสี่ยงเกิดบั๊กมากขึ้น
+5. เปรียบเทียบ time complexity และ space complexity ระหว่างเวอร์ชันเก่าและใหม่
+6. ให้คำแนะนำเชิงรูปธรรมว่าควรปรับเวอร์ชันใหม่อย่างไรให้ดีกว่าเดิมอย่างชัดเจน"""
 
     options = {'num_ctx': 4000} if fast_mode else {}
 
